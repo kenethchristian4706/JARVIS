@@ -1,0 +1,36 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual Environments
+venv/
+ENV/
+env/
+.env
+.venv
+pip-selfcheck.json
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Model files (e.g. SentenceTransformer models, which exceed GitHub's 100MB file limit)
+model.safetensors
+**/model.safetensors
+**/model/
+
+# Project specific large files, databases, logs, and zips
+*.db
+*.db-journal
+*.log
+*.zip
+aether.log
+database/
+JARVIS_MARK_9/database/
+JARVIS_MARK_9/aether.log

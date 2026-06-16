@@ -1,0 +1,4 @@
+pydantic>=2.0.0
+requests>=2.25.0
+json-repair>=0.30.0
+numpy>=1.20.0
