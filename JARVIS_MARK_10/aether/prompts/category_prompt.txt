@@ -1,0 +1,29 @@
+You are the Category Selector for Aether, a local offline desktop assistant.
+Your task is to classify the user's natural language query into exactly one of the following categories:
+
+1. application_management: Opening, closing, listing, or switching focus between desktop applications.
+2. file_operations: Moving, copying, renaming, deleting, searching, opening files, creating/deleting folders, compressing, or extracting archives.
+3. browser_operations: Web search, YouTube search, opening URLs, downloading files, opening or closing tabs.
+4. system_control: System shutdown, restart, sleep, lock, volume adjustment, muting, or screen brightness controls.
+
+Few-Shot Examples:
+- "open chrome" -> {"category": "application_management"}
+- "launch notepad" -> {"category": "application_management"}
+- "start spotify" -> {"category": "application_management"}
+- "close calculator" -> {"category": "application_management"}
+- "open report.pdf" -> {"category": "file_operations"}
+- "delete backup.zip" -> {"category": "file_operations"}
+- "copy invoice.xlsx to Desktop" -> {"category": "file_operations"}
+- "google search today's weather" -> {"category": "browser_operations"}
+- "go to github.com" -> {"category": "browser_operations"}
+- "download file from https://example.com/file" -> {"category": "browser_operations"}
+- "set volume to 60" -> {"category": "system_control"}
+- "turn off my computer" -> {"category": "system_control"}
+
+Query: "{query}"
+
+Output ONLY a valid JSON object matching this schema exactly:
+{
+  "category": "one_of_the_above_categories"
+}
+Do not include any explanations, formatting, markdown code blocks, or preamble. Return ONLY the JSON object.

@@ -1,0 +1,786 @@
+[
+  {
+    "tool": "open_app",
+    "query": "open Chrome",
+    "expected_parameters": {
+      "app_name": "Chrome"
+    }
+  },
+  {
+    "tool": "open_app",
+    "query": "open Notepad",
+    "expected_parameters": {
+      "app_name": "Notepad"
+    }
+  },
+  {
+    "tool": "open_app",
+    "query": "open Spotify",
+    "expected_parameters": {
+      "app_name": "Spotify"
+    }
+  },
+  {
+    "tool": "open_app",
+    "query": "open Calculator",
+    "expected_parameters": {
+      "app_name": "Calculator"
+    }
+  },
+  {
+    "tool": "open_app",
+    "query": "open VS Code",
+    "expected_parameters": {
+      "app_name": "VS Code"
+    }
+  },
+  {
+    "tool": "open_app",
+    "query": "open Word",
+    "expected_parameters": {
+      "app_name": "Word"
+    }
+  },
+  {
+    "tool": "open_app",
+    "query": "open Excel",
+    "expected_parameters": {
+      "app_name": "Excel"
+    }
+  },
+  {
+    "tool": "open_app",
+    "query": "launch Chrome",
+    "expected_parameters": {
+      "app_name": "Chrome"
+    }
+  },
+  {
+    "tool": "open_app",
+    "query": "launch Notepad",
+    "expected_parameters": {
+      "app_name": "Notepad"
+    }
+  },
+  {
+    "tool": "open_app",
+    "query": "launch Spotify",
+    "expected_parameters": {
+      "app_name": "Spotify"
+    }
+  },
+  {
+    "tool": "open_app",
+    "query": "launch Calculator",
+    "expected_parameters": {
+      "app_name": "Calculator"
+    }
+  },
+  {
+    "tool": "open_app",
+    "query": "launch VS Code",
+    "expected_parameters": {
+      "app_name": "VS Code"
+    }
+  },
+  {
+    "tool": "open_app",
+    "query": "launch Word",
+    "expected_parameters": {
+      "app_name": "Word"
+    }
+  },
+  {
+    "tool": "open_app",
+    "query": "launch Excel",
+    "expected_parameters": {
+      "app_name": "Excel"
+    }
+  },
+  {
+    "tool": "close_app",
+    "query": "close Chrome",
+    "expected_parameters": {
+      "app_name": "Chrome"
+    }
+  },
+  {
+    "tool": "close_app",
+    "query": "close Notepad",
+    "expected_parameters": {
+      "app_name": "Notepad"
+    }
+  },
+  {
+    "tool": "close_app",
+    "query": "close Spotify",
+    "expected_parameters": {
+      "app_name": "Spotify"
+    }
+  },
+  {
+    "tool": "close_app",
+    "query": "close Calculator",
+    "expected_parameters": {
+      "app_name": "Calculator"
+    }
+  },
+  {
+    "tool": "close_app",
+    "query": "close VS Code",
+    "expected_parameters": {
+      "app_name": "VS Code"
+    }
+  },
+  {
+    "tool": "close_app",
+    "query": "close Word",
+    "expected_parameters": {
+      "app_name": "Word"
+    }
+  },
+  {
+    "tool": "close_app",
+    "query": "close Excel",
+    "expected_parameters": {
+      "app_name": "Excel"
+    }
+  },
+  {
+    "tool": "switch_to_app",
+    "query": "switch focus to Chrome",
+    "expected_parameters": {
+      "app_name": "Chrome"
+    }
+  },
+  {
+    "tool": "switch_to_app",
+    "query": "switch focus to Notepad",
+    "expected_parameters": {
+      "app_name": "Notepad"
+    }
+  },
+  {
+    "tool": "switch_to_app",
+    "query": "switch focus to Spotify",
+    "expected_parameters": {
+      "app_name": "Spotify"
+    }
+  },
+  {
+    "tool": "switch_to_app",
+    "query": "switch focus to Calculator",
+    "expected_parameters": {
+      "app_name": "Calculator"
+    }
+  },
+  {
+    "tool": "switch_to_app",
+    "query": "switch focus to VS Code",
+    "expected_parameters": {
+      "app_name": "VS Code"
+    }
+  },
+  {
+    "tool": "switch_to_app",
+    "query": "switch focus to Word",
+    "expected_parameters": {
+      "app_name": "Word"
+    }
+  },
+  {
+    "tool": "switch_to_app",
+    "query": "switch focus to Excel",
+    "expected_parameters": {
+      "app_name": "Excel"
+    }
+  },
+  {
+    "tool": "move_file",
+    "query": "move report.pdf to Documents",
+    "expected_parameters": {
+      "source": "report.pdf",
+      "destination": "Documents"
+    }
+  },
+  {
+    "tool": "move_file",
+    "query": "move report.pdf to Downloads",
+    "expected_parameters": {
+      "source": "report.pdf",
+      "destination": "Downloads"
+    }
+  },
+  {
+    "tool": "move_file",
+    "query": "move report.pdf to Desktop",
+    "expected_parameters": {
+      "source": "report.pdf",
+      "destination": "Desktop"
+    }
+  },
+  {
+    "tool": "move_file",
+    "query": "move data.csv to Documents",
+    "expected_parameters": {
+      "source": "data.csv",
+      "destination": "Documents"
+    }
+  },
+  {
+    "tool": "move_file",
+    "query": "move data.csv to Downloads",
+    "expected_parameters": {
+      "source": "data.csv",
+      "destination": "Downloads"
+    }
+  },
+  {
+    "tool": "move_file",
+    "query": "move data.csv to Desktop",
+    "expected_parameters": {
+      "source": "data.csv",
+      "destination": "Desktop"
+    }
+  },
+  {
+    "tool": "move_file",
+    "query": "move notes.txt to Documents",
+    "expected_parameters": {
+      "source": "notes.txt",
+      "destination": "Documents"
+    }
+  },
+  {
+    "tool": "move_file",
+    "query": "move notes.txt to Downloads",
+    "expected_parameters": {
+      "source": "notes.txt",
+      "destination": "Downloads"
+    }
+  },
+  {
+    "tool": "move_file",
+    "query": "move notes.txt to Desktop",
+    "expected_parameters": {
+      "source": "notes.txt",
+      "destination": "Desktop"
+    }
+  },
+  {
+    "tool": "copy_file",
+    "query": "copy report.pdf to Documents",
+    "expected_parameters": {
+      "source": "report.pdf",
+      "destination": "Documents"
+    }
+  },
+  {
+    "tool": "copy_file",
+    "query": "copy report.pdf to Downloads",
+    "expected_parameters": {
+      "source": "report.pdf",
+      "destination": "Downloads"
+    }
+  },
+  {
+    "tool": "copy_file",
+    "query": "copy report.pdf to Desktop",
+    "expected_parameters": {
+      "source": "report.pdf",
+      "destination": "Desktop"
+    }
+  },
+  {
+    "tool": "copy_file",
+    "query": "copy data.csv to Documents",
+    "expected_parameters": {
+      "source": "data.csv",
+      "destination": "Documents"
+    }
+  },
+  {
+    "tool": "copy_file",
+    "query": "copy data.csv to Downloads",
+    "expected_parameters": {
+      "source": "data.csv",
+      "destination": "Downloads"
+    }
+  },
+  {
+    "tool": "copy_file",
+    "query": "copy data.csv to Desktop",
+    "expected_parameters": {
+      "source": "data.csv",
+      "destination": "Desktop"
+    }
+  },
+  {
+    "tool": "copy_file",
+    "query": "copy notes.txt to Documents",
+    "expected_parameters": {
+      "source": "notes.txt",
+      "destination": "Documents"
+    }
+  },
+  {
+    "tool": "copy_file",
+    "query": "copy notes.txt to Downloads",
+    "expected_parameters": {
+      "source": "notes.txt",
+      "destination": "Downloads"
+    }
+  },
+  {
+    "tool": "copy_file",
+    "query": "copy notes.txt to Desktop",
+    "expected_parameters": {
+      "source": "notes.txt",
+      "destination": "Desktop"
+    }
+  },
+  {
+    "tool": "rename_file",
+    "query": "rename report.pdf to backup.txt",
+    "expected_parameters": {
+      "source": "report.pdf",
+      "new_name": "backup.txt"
+    }
+  },
+  {
+    "tool": "rename_file",
+    "query": "rename data.csv to backup.txt",
+    "expected_parameters": {
+      "source": "data.csv",
+      "new_name": "backup.txt"
+    }
+  },
+  {
+    "tool": "rename_file",
+    "query": "rename notes.txt to backup.txt",
+    "expected_parameters": {
+      "source": "notes.txt",
+      "new_name": "backup.txt"
+    }
+  },
+  {
+    "tool": "delete_file",
+    "query": "delete report.pdf",
+    "expected_parameters": {
+      "filename": "report.pdf"
+    }
+  },
+  {
+    "tool": "delete_file",
+    "query": "delete data.csv",
+    "expected_parameters": {
+      "filename": "data.csv"
+    }
+  },
+  {
+    "tool": "delete_file",
+    "query": "delete notes.txt",
+    "expected_parameters": {
+      "filename": "notes.txt"
+    }
+  },
+  {
+    "tool": "search_files",
+    "query": "search files for python tutorial",
+    "expected_parameters": {
+      "query": "python tutorial"
+    }
+  },
+  {
+    "tool": "search_files",
+    "query": "search files for funny videos",
+    "expected_parameters": {
+      "query": "funny videos"
+    }
+  },
+  {
+    "tool": "open_file",
+    "query": "open file report.pdf",
+    "expected_parameters": {
+      "filename": "report.pdf"
+    }
+  },
+  {
+    "tool": "open_file",
+    "query": "open file data.csv",
+    "expected_parameters": {
+      "filename": "data.csv"
+    }
+  },
+  {
+    "tool": "open_file",
+    "query": "open file notes.txt",
+    "expected_parameters": {
+      "filename": "notes.txt"
+    }
+  },
+  {
+    "tool": "create_folder",
+    "query": "create folder Documents",
+    "expected_parameters": {
+      "folder_name": "Documents",
+      "location": null
+    }
+  },
+  {
+    "tool": "create_folder",
+    "query": "create folder Downloads",
+    "expected_parameters": {
+      "folder_name": "Downloads",
+      "location": null
+    }
+  },
+  {
+    "tool": "create_folder",
+    "query": "create folder Desktop",
+    "expected_parameters": {
+      "folder_name": "Desktop",
+      "location": null
+    }
+  },
+  {
+    "tool": "delete_folder",
+    "query": "delete folder Documents",
+    "expected_parameters": {
+      "folder_name": "Documents"
+    }
+  },
+  {
+    "tool": "delete_folder",
+    "query": "delete folder Downloads",
+    "expected_parameters": {
+      "folder_name": "Downloads"
+    }
+  },
+  {
+    "tool": "delete_folder",
+    "query": "delete folder Desktop",
+    "expected_parameters": {
+      "folder_name": "Desktop"
+    }
+  },
+  {
+    "tool": "create_file",
+    "query": "create file report.pdf",
+    "expected_parameters": {
+      "filename": "report.pdf",
+      "location": null
+    }
+  },
+  {
+    "tool": "create_file",
+    "query": "create file data.csv",
+    "expected_parameters": {
+      "filename": "data.csv",
+      "location": null
+    }
+  },
+  {
+    "tool": "create_file",
+    "query": "create file notes.txt",
+    "expected_parameters": {
+      "filename": "notes.txt",
+      "location": null
+    }
+  },
+  {
+    "tool": "extract_archive",
+    "query": "extract report.pdf to Documents",
+    "expected_parameters": {
+      "archive": "report.pdf",
+      "destination": "Documents"
+    }
+  },
+  {
+    "tool": "extract_archive",
+    "query": "extract report.pdf to Downloads",
+    "expected_parameters": {
+      "archive": "report.pdf",
+      "destination": "Downloads"
+    }
+  },
+  {
+    "tool": "extract_archive",
+    "query": "extract report.pdf to Desktop",
+    "expected_parameters": {
+      "archive": "report.pdf",
+      "destination": "Desktop"
+    }
+  },
+  {
+    "tool": "extract_archive",
+    "query": "extract data.csv to Documents",
+    "expected_parameters": {
+      "archive": "data.csv",
+      "destination": "Documents"
+    }
+  },
+  {
+    "tool": "extract_archive",
+    "query": "extract data.csv to Downloads",
+    "expected_parameters": {
+      "archive": "data.csv",
+      "destination": "Downloads"
+    }
+  },
+  {
+    "tool": "extract_archive",
+    "query": "extract data.csv to Desktop",
+    "expected_parameters": {
+      "archive": "data.csv",
+      "destination": "Desktop"
+    }
+  },
+  {
+    "tool": "extract_archive",
+    "query": "extract notes.txt to Documents",
+    "expected_parameters": {
+      "archive": "notes.txt",
+      "destination": "Documents"
+    }
+  },
+  {
+    "tool": "extract_archive",
+    "query": "extract notes.txt to Downloads",
+    "expected_parameters": {
+      "archive": "notes.txt",
+      "destination": "Downloads"
+    }
+  },
+  {
+    "tool": "extract_archive",
+    "query": "extract notes.txt to Desktop",
+    "expected_parameters": {
+      "archive": "notes.txt",
+      "destination": "Desktop"
+    }
+  },
+  {
+    "tool": "search_web",
+    "query": "google search python tutorial",
+    "expected_parameters": {
+      "query": "python tutorial"
+    }
+  },
+  {
+    "tool": "search_web",
+    "query": "google search funny videos",
+    "expected_parameters": {
+      "query": "funny videos"
+    }
+  },
+  {
+    "tool": "search_youtube",
+    "query": "search youtube for python tutorial",
+    "expected_parameters": {
+      "query": "python tutorial"
+    }
+  },
+  {
+    "tool": "search_youtube",
+    "query": "search youtube for funny videos",
+    "expected_parameters": {
+      "query": "funny videos"
+    }
+  },
+  {
+    "tool": "open_url",
+    "query": "open website google.com",
+    "expected_parameters": {
+      "url": "google.com"
+    }
+  },
+  {
+    "tool": "open_url",
+    "query": "open website youtube.com/watch",
+    "expected_parameters": {
+      "url": "youtube.com/watch"
+    }
+  },
+  {
+    "tool": "download_file",
+    "query": "download google.com to Documents",
+    "expected_parameters": {
+      "url": "google.com",
+      "destination": "Documents"
+    }
+  },
+  {
+    "tool": "download_file",
+    "query": "download youtube.com/watch to Documents",
+    "expected_parameters": {
+      "url": "youtube.com/watch",
+      "destination": "Documents"
+    }
+  },
+  {
+    "tool": "download_file",
+    "query": "download google.com to Downloads",
+    "expected_parameters": {
+      "url": "google.com",
+      "destination": "Downloads"
+    }
+  },
+  {
+    "tool": "download_file",
+    "query": "download youtube.com/watch to Downloads",
+    "expected_parameters": {
+      "url": "youtube.com/watch",
+      "destination": "Downloads"
+    }
+  },
+  {
+    "tool": "download_file",
+    "query": "download google.com to Desktop",
+    "expected_parameters": {
+      "url": "google.com",
+      "destination": "Desktop"
+    }
+  },
+  {
+    "tool": "download_file",
+    "query": "download youtube.com/watch to Desktop",
+    "expected_parameters": {
+      "url": "youtube.com/watch",
+      "destination": "Desktop"
+    }
+  },
+  {
+    "tool": "open_new_tab",
+    "query": "open new tab with google.com",
+    "expected_parameters": {
+      "url": "google.com"
+    }
+  },
+  {
+    "tool": "open_new_tab",
+    "query": "open new tab with youtube.com/watch",
+    "expected_parameters": {
+      "url": "youtube.com/watch"
+    }
+  },
+  {
+    "tool": "set_volume",
+    "query": "set volume to 0",
+    "expected_parameters": {
+      "level": 0
+    }
+  },
+  {
+    "tool": "set_volume",
+    "query": "set volume to 15",
+    "expected_parameters": {
+      "level": 15
+    }
+  },
+  {
+    "tool": "set_brightness",
+    "query": "set brightness to 0",
+    "expected_parameters": {
+      "level": 0
+    }
+  },
+  {
+    "tool": "set_brightness",
+    "query": "set brightness to 15",
+    "expected_parameters": {
+      "level": 15
+    }
+  },
+  {
+    "tool": "file_info",
+    "query": "show info for report.pdf",
+    "expected_parameters": {
+      "filename": "report.pdf"
+    }
+  },
+  {
+    "tool": "file_info",
+    "query": "show info for data.csv",
+    "expected_parameters": {
+      "filename": "data.csv"
+    }
+  },
+  {
+    "tool": "file_info",
+    "query": "show info for notes.txt",
+    "expected_parameters": {
+      "filename": "notes.txt"
+    }
+  },
+  {
+    "tool": "list_directory",
+    "query": "list directory path Documents",
+    "expected_parameters": {
+      "path": "Documents"
+    }
+  },
+  {
+    "tool": "list_directory",
+    "query": "list directory path Downloads",
+    "expected_parameters": {
+      "path": "Downloads"
+    }
+  },
+  {
+    "tool": "list_directory",
+    "query": "list directory path Desktop",
+    "expected_parameters": {
+      "path": "Desktop"
+    }
+  },
+  {
+    "tool": "switch_tab",
+    "query": "switch tab to Chrome",
+    "expected_parameters": {
+      "tab": "Chrome"
+    }
+  },
+  {
+    "tool": "switch_tab",
+    "query": "switch tab to Notepad",
+    "expected_parameters": {
+      "tab": "Notepad"
+    }
+  },
+  {
+    "tool": "switch_tab",
+    "query": "switch tab to Spotify",
+    "expected_parameters": {
+      "tab": "Spotify"
+    }
+  },
+  {
+    "tool": "switch_tab",
+    "query": "switch tab to Calculator",
+    "expected_parameters": {
+      "tab": "Calculator"
+    }
+  },
+  {
+    "tool": "switch_tab",
+    "query": "switch tab to VS Code",
+    "expected_parameters": {
+      "tab": "VS Code"
+    }
+  },
+  {
+    "tool": "switch_tab",
+    "query": "switch tab to Word",
+    "expected_parameters": {
+      "tab": "Word"
+    }
+  },
+  {
+    "tool": "switch_tab",
+    "query": "switch tab to Excel",
+    "expected_parameters": {
+      "tab": "Excel"
+    }
+  }
+]
