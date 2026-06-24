@@ -1,0 +1,46 @@
+1. Application Management (5)
+open_app
+close_app
+switch_to_app
+list_running_apps
+list_installed_apps
+2. File Operations (14)
+move_file
+copy_file
+rename_file
+delete_file
+search_files
+open_file
+create_folder
+create_file
+delete_folder
+compress_files
+extract_archive
+list_directory
+file_info
+append_file
+3. Browser Operations (8)
+search_web
+search_youtube
+open_url
+download_file
+open_new_tab
+close_tab
+list_tabs
+switch_tab
+4. System Control (8)
+shutdown_pc
+restart_pc
+sleep_pc
+lock_pc
+set_volume
+mute_volume
+unmute_volume
+set_brightness
+5. Miscellaneous (2)
+copy_to_clipboard
+read_clipboard
+
+
+
+open notepadopen notepadopen notep

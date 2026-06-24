@@ -1,0 +1,1166 @@
+[
+  {
+    "query": "open Chrome",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "open Notepad",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "open Spotify",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "open Calculator",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "open VS Code",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "open Word",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "open Excel",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "launch Chrome",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "launch Notepad",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "launch Spotify",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "launch Calculator",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "launch VS Code",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "launch Word",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "launch Excel",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "start Chrome",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "start Notepad",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "start Spotify",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "start Calculator",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "start VS Code",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "start Word",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "start Excel",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "run Chrome",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "run Notepad",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "run Spotify",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "run Calculator",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "run VS Code",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "run Word",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "run Excel",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "please open Chrome",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "please open Notepad",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "please open Spotify",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "please open Calculator",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "please open VS Code",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "please open Word",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "please open Excel",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "close Chrome",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "close Notepad",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "close Spotify",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "close Calculator",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "close VS Code",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "close Word",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "close Excel",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "terminate Chrome",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "terminate Notepad",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "terminate Spotify",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "terminate Calculator",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "terminate VS Code",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "terminate Word",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "terminate Excel",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "kill Chrome",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "kill Notepad",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "kill Spotify",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "kill Calculator",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "kill VS Code",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "kill Word",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "kill Excel",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "stop Chrome",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "stop Notepad",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "stop Spotify",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "stop Calculator",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "stop VS Code",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "stop Word",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "stop Excel",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "quit Chrome",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "quit Notepad",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "quit Spotify",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "quit Calculator",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "quit VS Code",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "quit Word",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "quit Excel",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "switch to Chrome",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "switch to Notepad",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "switch to Spotify",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "switch to Calculator",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "switch to VS Code",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "switch to Word",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "switch to Excel",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "focus Chrome",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "focus Notepad",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "focus Spotify",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "focus Calculator",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "focus VS Code",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "focus Word",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "focus Excel",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "bring Chrome to front",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "bring Notepad to front",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "bring Spotify to front",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "bring Calculator to front",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "bring VS Code to front",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "bring Word to front",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "bring Excel to front",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "go to Chrome",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "go to Notepad",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "go to Spotify",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "go to Calculator",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "go to VS Code",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "go to Word",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "go to Excel",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "list running apps",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "show active processes",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "what applications are running",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "list installed apps",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "show my programs",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "what apps do I have",
+    "expected_category": "application_management"
+  },
+  {
+    "query": "move report.pdf to Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "move report.pdf to Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "move report.pdf to Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "move data.csv to Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "move data.csv to Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "move data.csv to Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "move notes.txt to Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "move notes.txt to Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "move notes.txt to Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "transfer report.pdf into Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "transfer report.pdf into Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "transfer report.pdf into Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "transfer data.csv into Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "transfer data.csv into Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "transfer data.csv into Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "transfer notes.txt into Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "transfer notes.txt into Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "transfer notes.txt into Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "put report.pdf in Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "put report.pdf in Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "put report.pdf in Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "put data.csv in Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "put data.csv in Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "put data.csv in Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "put notes.txt in Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "put notes.txt in Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "put notes.txt in Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "copy report.pdf to Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "copy report.pdf to Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "copy report.pdf to Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "copy data.csv to Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "copy data.csv to Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "copy data.csv to Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "copy notes.txt to Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "copy notes.txt to Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "copy notes.txt to Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "duplicate report.pdf to Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "duplicate report.pdf to Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "duplicate report.pdf to Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "duplicate data.csv to Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "duplicate data.csv to Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "duplicate data.csv to Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "duplicate notes.txt to Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "duplicate notes.txt to Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "duplicate notes.txt to Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "rename report.pdf to new_name.txt",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "rename data.csv to new_name.txt",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "rename notes.txt to new_name.txt",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "change name of report.pdf to backup.txt",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "change name of data.csv to backup.txt",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "change name of notes.txt to backup.txt",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "delete report.pdf",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "delete data.csv",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "delete notes.txt",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "remove report.pdf",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "remove data.csv",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "remove notes.txt",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "trash report.pdf",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "trash data.csv",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "trash notes.txt",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "search files for report",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "find my files named report",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "open file report.pdf",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "open file data.csv",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "open file notes.txt",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "launch file report.pdf",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "launch file data.csv",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "launch file notes.txt",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "view report.pdf",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "view data.csv",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "view notes.txt",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "create folder Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "create folder Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "create folder Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "make a directory Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "make a directory Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "make a directory Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "delete folder Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "delete folder Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "delete folder Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "remove directory Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "remove directory Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "remove directory Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "compress report.pdf into archive.zip",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "compress data.csv into archive.zip",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "compress notes.txt into archive.zip",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "zip report.pdf",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "zip data.csv",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "zip notes.txt",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "extract archive.zip to Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "extract archive.zip to Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "extract archive.zip to Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "unzip archive.zip into Documents",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "unzip archive.zip into Downloads",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "unzip archive.zip into Desktop",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "create file report.pdf",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "create file data.csv",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "create file notes.txt",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "make file report.pdf",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "make file data.csv",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "make file notes.txt",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "create report.docx",
+    "expected_category": "file_operations"
+  },
+  {
+    "query": "search the web for python tutorial",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "search the web for funny videos",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "search the web for weather today",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "google search python tutorial",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "google search funny videos",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "google search weather today",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "look up python tutorial online",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "look up funny videos online",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "look up weather today online",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "search youtube for python tutorial",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "search youtube for funny videos",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "search youtube for weather today",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "play python tutorial on youtube",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "play funny videos on youtube",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "play weather today on youtube",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "youtube search python tutorial",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "youtube search funny videos",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "youtube search weather today",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "open URL google.com",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "open URL youtube.com/watch",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "open URL github.com",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "go to website google.com",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "go to website youtube.com/watch",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "go to website github.com",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "open site google.com",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "open site youtube.com/watch",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "open site github.com",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "download file from google.com to Downloads",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "download file from youtube.com/watch to Downloads",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "download file from github.com to Downloads",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "download google.com",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "download youtube.com/watch",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "download github.com",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "open a new tab with google.com",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "open a new tab with youtube.com/watch",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "open a new tab with github.com",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "new tab google.com",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "new tab youtube.com/watch",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "new tab github.com",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "close the active browser tab",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "close browser tab",
+    "expected_category": "browser_operations"
+  },
+  {
+    "query": "shutdown PC",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "turn off computer",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "power off",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "restart computer",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "reboot system",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "sleep mode",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "suspend PC",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "put computer to sleep",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "lock my computer",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "lock session",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "lock PC",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "set volume to 0",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "set volume to 15",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "set volume to 50",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "set volume to 85",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "set volume to 100",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "change sound level to 0",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "change sound level to 15",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "change sound level to 50",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "change sound level to 85",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "change sound level to 100",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "volume 0%",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "volume 15%",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "volume 50%",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "volume 85%",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "volume 100%",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "mute volume",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "mute audio",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "silence sound",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "set brightness to 0",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "set brightness to 15",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "set brightness to 50",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "set brightness to 85",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "set brightness to 100",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "make screen brightness 0",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "make screen brightness 15",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "make screen brightness 50",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "make screen brightness 85",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "make screen brightness 100",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "adjust brightness to 0%",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "adjust brightness to 15%",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "adjust brightness to 50%",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "adjust brightness to 85%",
+    "expected_category": "system_control"
+  },
+  {
+    "query": "adjust brightness to 100%",
+    "expected_category": "system_control"
+  }
+]

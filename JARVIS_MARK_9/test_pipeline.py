@@ -1,4 +1,4 @@
-"""
+    """
 test_pipeline.py
 
 Automated test harness for verifying Aether POC pipeline end-to-end.

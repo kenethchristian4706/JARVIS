@@ -197,18 +197,24 @@ def resolve_filename(name_or_path: str, is_directory: Optional[bool] = None) -> 
         suffix = f" ({loc})" if loc else ""
         print(f"  {idx}. {row['absolute_path']}{suffix}")
         
-    try:
-        choice = input(f"Please select a number (1-{len(rows)}) or type 'cancel': ").strip()
-        if choice.lower() == 'cancel':
-            raise ValueError("Operation cancelled by user.")
-        choice_idx = int(choice) - 1
-        if 0 <= choice_idx < len(rows):
-            return Path(rows[choice_idx]["absolute_path"])
-        else:
-            raise ValueError(f"Invalid selection: {choice}")
-    except (KeyboardInterrupt, EOFError, ValueError) as e:
-        logger.warning(f"Ambiguity resolution aborted or invalid: {e}")
-        raise ValueError(f"Ambiguity Resolution Failed: {e}")
+    while True:
+        try:
+            choice = input(f"Please select a number (1-{len(rows)}) or type 'cancel': ").strip()
+            if choice.lower() in ('cancel', 'cancle', 'c', 'q', 'quit', 'exit', 'abort'):
+                raise ValueError("Operation cancelled by user.")
+            choice_idx = int(choice) - 1
+            if 0 <= choice_idx < len(rows):
+                return Path(rows[choice_idx]["absolute_path"])
+            else:
+                print(f"Invalid selection: {choice}. Please choose a number between 1 and {len(rows)} or type 'cancel'.")
+        except (KeyboardInterrupt, EOFError):
+            logger.warning("Ambiguity resolution interrupted by user.")
+            raise ValueError("Ambiguity Resolution Interrupted.")
+        except ValueError as e:
+            if "Operation cancelled" in str(e):
+                logger.info("Ambiguity resolution cancelled by user.")
+                raise ValueError("Ambiguity Resolution Cancelled.")
+            print(f"Invalid input: '{choice}'. Please select a valid number or type 'cancel'.")
 
 def move_file(source: str, destination: Optional[str] = None) -> str:
     """Moves a file or folder from source path to destination folder or path."""

@@ -221,7 +221,7 @@ def move_file(source: str, destination: Optional[str] = None) -> str:
         print("Examples:\n* Documents\n* Downloads\n* Desktop\n* Custom path")
         destination = input("Enter destination: ").strip()
         if not destination:
-                    raise ValueError("Destination is required to move a file.")
+            raise ValueError("Destination is required to move a file.")
             
     dst = resolve_path(destination)
     if dst.is_dir():
@@ -329,11 +329,15 @@ def open_file(filename: str) -> str:
     os.startfile(str(target))
     return f"Successfully opened file '{target.name}' in its default viewer."
 
-def create_folder(folder_name: str, location: Optional[str] = None) -> str:
+def create_folder(folder_name: str, location: Optional[str] = None) -> dict:
     """Creates a new folder/directory recursively after checking duplicate names."""
     if location and location.startswith("_ALREADY_OPENED_:"):
         dest_path = location.split("_ALREADY_OPENED_:", 1)[1]
-        return f"Successfully opened existing folder at '{dest_path}' (Deferred creation)."
+        return {
+            "success": True,
+            "message": f"Successfully opened existing folder at '{dest_path}' (Deferred creation).",
+            "path": str(dest_path)
+        }
 
     create_another = False
     if location and "?create_another=true" in location:
@@ -373,7 +377,11 @@ def create_folder(folder_name: str, location: Optional[str] = None) -> str:
                     else:
                         dest = resolve_filename(folder_name, is_directory=True)
                     os.startfile(str(dest))
-                    return f"Successfully opened existing folder at '{dest}' (Deferred creation)."
+                    return {
+                        "success": True,
+                        "message": f"Successfully opened existing folder at '{dest}' (Deferred creation).",
+                        "path": str(dest)
+                    }
                 elif choice == '2':
                     break
                 elif choice == '3':
@@ -382,19 +390,31 @@ def create_folder(folder_name: str, location: Optional[str] = None) -> str:
 
     if target.exists():
         if target.is_dir():
-            return f"Folder '{target}' already exists."
+            return {
+                "success": True,
+                "message": f"Folder '{target}' already exists.",
+                "path": str(target)
+            }
         else:
             raise FileExistsError(f"A file already exists at '{target}'.")
             
     target.mkdir(parents=True, exist_ok=True)
     add_to_index(target)
-    return f"Successfully created folder at '{target}'"
+    return {
+        "success": True,
+        "message": f"Successfully created folder at '{target}'",
+        "path": str(target)
+    }
 
-def create_file(filename: str, location: Optional[str] = None) -> str:
+def create_file(filename: str, location: Optional[str] = None) -> dict:
     """Creates a new file after checking duplicate names."""
     if location and location.startswith("_ALREADY_OPENED_:"):
         dest_path = location.split("_ALREADY_OPENED_:", 1)[1]
-        return f"Successfully opened existing file at '{dest_path}' (Deferred creation)."
+        return {
+            "success": True,
+            "message": f"Successfully opened existing file at '{dest_path}' (Deferred creation).",
+            "path": str(dest_path)
+        }
 
     create_another = False
     if location and "?create_another=true" in location:
@@ -434,7 +454,11 @@ def create_file(filename: str, location: Optional[str] = None) -> str:
                     else:
                         dest = resolve_filename(filename, is_directory=False)
                     os.startfile(str(dest))
-                    return f"Successfully opened existing file at '{dest}' (Deferred creation)."
+                    return {
+                        "success": True,
+                        "message": f"Successfully opened existing file at '{dest}' (Deferred creation).",
+                        "path": str(dest)
+                    }
                 elif choice == '2':
                     break
                 elif choice == '3':
@@ -443,14 +467,22 @@ def create_file(filename: str, location: Optional[str] = None) -> str:
 
     if target.exists():
         if target.is_file():
-            return f"File '{target}' already exists."
+            return {
+                "success": True,
+                "message": f"File '{target}' already exists.",
+                "path": str(target)
+            }
         else:
             raise FileExistsError(f"A directory already exists at '{target}'.")
             
     target.parent.mkdir(parents=True, exist_ok=True)
     target.touch(exist_ok=True)
     add_to_index(target)
-    return f"Successfully created file at '{target}'"
+    return {
+        "success": True,
+        "message": f"Successfully created file at '{target}'",
+        "path": str(target)
+    }
 
 def delete_folder(folder_name: str) -> str:
     """Deletes a folder recursively (moves it to the Recycle Bin using send2trash)."""
