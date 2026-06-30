@@ -9,4 +9,5 @@ send2trash>=1.8.0
 watchdog>=3.0.0
 pywin32>=306
 python-dotenv>=1.0.0
+keyring>=25.7.0
 

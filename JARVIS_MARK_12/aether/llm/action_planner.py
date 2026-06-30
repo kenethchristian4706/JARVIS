@@ -137,6 +137,18 @@ TOOL_METADATA_SIMPLIFIED = {
         "Example_Query": "append hello to log.txt",
         "Example_Args": 'path="log.txt", content="hello"'
     },
+    "write_file": {
+        "Purpose": "Creates a new text file or completely replaces the contents of an existing text file. Never appends existing content.",
+        "Arguments": "path, content, encoding, create_parent",
+        "Example_Query": "Create notes.txt containing Hello World",
+        "Example_Args": 'path="notes.txt", content="Hello World", encoding="utf-8", create_parent=False'
+    },
+    "duplicate_file": {
+        "Purpose": "Creates a duplicate copy of a file. Automatically generates a destination filename if one is not provided.",
+        "Arguments": "source, destination, overwrite",
+        "Example_Query": "duplicate notes.txt",
+        "Example_Args": 'source="notes.txt", destination=None, overwrite=False'
+    },
     "search_web": {
         "Purpose": "Search Google in the web browser.",
         "Arguments": "query",
@@ -300,10 +312,64 @@ TOOL_METADATA_SIMPLIFIED = {
         "Example_Args": "{}"
     },
     "send_email": {
-        "Purpose": "Send an email with recipient, subject, and body.",
-        "Arguments": "recipient, subject, body, confirmed",
+        "Purpose": "Send an email with recipient, subject, and body, with optional CC, BCC, and file attachments.",
+        "Arguments": "recipient, subject, body, cc, bcc, attachments, confirmed",
         "Example_Query": "email john saying hello",
-        "Example_Args": 'recipient="john@example.com", subject="Hello", body="hello", confirmed=False'
+        "Example_Args": 'recipient="john@example.com", subject="Hello", body="hello", cc=None, bcc=None, attachments=None, confirmed=False'
+    },
+    "list_emails": {
+        "Purpose": "List summaries of recent emails.",
+        "Arguments": "limit, unread_only",
+        "Example_Query": "show my last 5 emails",
+        "Example_Args": 'limit=5, unread_only=False'
+    },
+    "read_email": {
+        "Purpose": "Read the contents of a selected email.",
+        "Arguments": "email_id",
+        "Example_Query": "read the latest email",
+        "Example_Args": 'email_id="latest"'
+    },
+    "cpu_usage": {
+        "Purpose": "Retrieve current CPU utilization metrics.",
+        "Arguments": "none",
+        "Example_Query": "check CPU usage",
+        "Example_Args": "{}"
+    },
+    "ram_usage": {
+        "Purpose": "Retrieve current RAM memory usage metrics.",
+        "Arguments": "none",
+        "Example_Query": "how much RAM is used",
+        "Example_Args": "{}"
+    },
+    "disk_usage": {
+        "Purpose": "Retrieve disk space information for all mounted drives.",
+        "Arguments": "none",
+        "Example_Query": "check disk space",
+        "Example_Args": "{}"
+    },
+    "battery_status": {
+        "Purpose": "Retrieve current battery status and charge level.",
+        "Arguments": "none",
+        "Example_Query": "check battery status",
+        "Example_Args": "{}"
+    },
+    "network_status": {
+        "Purpose": "Retrieve network connection status and IP addresses.",
+        "Arguments": "none",
+        "Example_Query": "what is my local IP",
+        "Example_Args": "{}"
+    },
+    "list_processes": {
+        "Purpose": "List running system processes sorted by CPU, Memory, or Name.",
+        "Arguments": "sort_by, limit",
+        "Example_Query": "show top 10 processes by memory",
+        "Example_Args": 'sort_by="memory", limit=10'
+    },
+    "get_screen_resolution": {
+        "Purpose": "Retrieve screen resolution bounds for all connected displays.",
+        "Arguments": "none",
+        "Example_Query": "what is my screen resolution",
+        "Example_Args": "{}"
     }
 }
 
@@ -327,6 +393,8 @@ TOOL_ARGUMENTS_MAP = {
     "extract_archive": ["archive", "destination"],
     "file_info": ["path"],
     "append_file": ["path", "content"],
+    "write_file": ["path", "content", "encoding", "create_parent"],
+    "duplicate_file": ["source", "destination", "overwrite"],
     "search_web": ["query"],
     "search_youtube": ["query"],
     "open_url": ["url"],
@@ -354,7 +422,16 @@ TOOL_ARGUMENTS_MAP = {
     "decrease_volume": [],
     "increase_brightness": [],
     "decrease_brightness": [],
-    "send_email": ["recipient", "subject", "body", "confirmed"]
+    "send_email": ["recipient", "subject", "body", "cc", "bcc", "attachments", "confirmed"],
+    "list_emails": ["limit", "unread_only"],
+    "read_email": ["email_id"],
+    "cpu_usage": [],
+    "ram_usage": [],
+    "disk_usage": [],
+    "battery_status": [],
+    "network_status": [],
+    "list_processes": ["sort_by", "limit"],
+    "get_screen_resolution": []
 }
 
 def analyze_empty_plan(
@@ -654,7 +731,20 @@ def plan_actions(original_query: str, normalized_query: str, candidate_tools: Li
         "tab": {"type": "string"},
         "folder_name": {"type": "string"},
         "new_name": {"type": "string"},
-        "confirmed": {"type": "boolean"}
+        "confirmed": {"type": "boolean"},
+        "encoding": {"type": "string"},
+        "create_parent": {"type": "boolean"},
+        "overwrite": {"type": "boolean"},
+        "sort_by": {"type": "string"},
+        "limit": {"type": "integer"},
+        "cc": {"type": "string"},
+        "bcc": {"type": "string"},
+        "attachments": {
+            "type": "array",
+            "items": {"type": "string"}
+        },
+        "unread_only": {"type": "boolean"},
+        "email_id": {"type": "string"}
     }
     
     any_of_items = []

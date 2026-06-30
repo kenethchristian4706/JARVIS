@@ -134,6 +134,20 @@ TOOLS_METADATA: Dict[str, Dict[str, Any]] = {
         "Aliases": ["read file", "get text"],
         "Dependencies": "none"
     },
+    "write_file": {
+        "Purpose": "Creates a new text file or completely replaces the contents of an existing text file. Never appends existing content.",
+        "Arguments": "path (str, required), content (str, required), encoding (str, optional, defaults to 'utf-8'), create_parent (bool, optional, defaults to False)",
+        "Keywords": ["write", "overwrite", "replace", "rewrite", "clear"],
+        "Aliases": ["overwrite file", "replace file content", "rewrite file", "clear and write"],
+        "Dependencies": "none"
+    },
+    "duplicate_file": {
+        "Purpose": "Creates a duplicate copy of a file. Automatically generates a destination filename if one is not provided.",
+        "Arguments": "source_path (str, required), destination_path (str, optional), overwrite (bool, optional, defaults to False)",
+        "Keywords": ["duplicate", "clone", "make copy", "create another copy"],
+        "Aliases": ["duplicate file", "clone file", "make copy of file"],
+        "Dependencies": "none"
+    },
     "compress_files": {
         "Purpose": "Compress a list of file or folder paths into a single zip archive.",
         "Arguments": "source_paths (List[str], required), output_path (str, required)",
@@ -205,10 +219,24 @@ TOOLS_METADATA: Dict[str, Dict[str, Any]] = {
         "Dependencies": "none"
     },
     "send_email": {
-        "Purpose": "Send an email message using SMTP server configurations. Requires confirmation.",
-        "Arguments": "recipient (str, required), subject (str, required), body (str, required), confirmed (bool, optional)",
+        "Purpose": "Send an email using the connected account. Requires confirmation.",
+        "Arguments": "recipient (str, required), subject (str, required), body (str, required), cc (str, optional), bcc (str, optional), attachments (List[str], optional), confirmed (bool, optional)",
         "Keywords": ["email", "send", "mail", "message"],
         "Aliases": ["send mail"],
+        "Dependencies": "none"
+    },
+    "list_emails": {
+        "Purpose": "List summaries of recent emails.",
+        "Arguments": "limit (int, optional, defaults to 10), unread_only (bool, optional, defaults to False)",
+        "Keywords": ["email", "list", "inbox", "mail", "messages"],
+        "Aliases": ["list emails", "show inbox", "check mail"],
+        "Dependencies": "none"
+    },
+    "read_email": {
+        "Purpose": "Read the contents of a selected email.",
+        "Arguments": "email_id (str, required)",
+        "Keywords": ["email", "read", "view", "mail", "open"],
+        "Aliases": ["read email", "view email", "open mail"],
         "Dependencies": "none"
     },
     "shutdown_pc": {
@@ -335,6 +363,55 @@ TOOLS_METADATA: Dict[str, Dict[str, Any]] = {
         "Arguments": "clipboard_text (str, required)",
         "Keywords": ["copy", "clipboard write", "set clipboard"],
         "Aliases": ["copy to clipboard"],
+        "Dependencies": "none"
+    },
+    "cpu_usage": {
+        "Purpose": "Retrieve current CPU usage metrics (read-only system information).",
+        "Arguments": "none",
+        "Keywords": ["cpu", "processor", "cores", "utilization", "usage"],
+        "Aliases": ["cpu percentage", "show cpu usage", "processor speed"],
+        "Dependencies": "none"
+    },
+    "ram_usage": {
+        "Purpose": "Retrieve current RAM memory usage metrics (read-only system information).",
+        "Arguments": "none",
+        "Keywords": ["ram", "memory", "usage", "available", "gb"],
+        "Aliases": ["memory usage", "show memory", "free ram"],
+        "Dependencies": "none"
+    },
+    "disk_usage": {
+        "Purpose": "Retrieve storage and disk space information for all mounted drives (read-only system information).",
+        "Arguments": "none",
+        "Keywords": ["disk", "storage", "space", "drives", "hard drive"],
+        "Aliases": ["disk space", "show storage", "free space"],
+        "Dependencies": "none"
+    },
+    "battery_status": {
+        "Purpose": "Retrieve current battery status, charging state, and remaining life (read-only system information).",
+        "Arguments": "none",
+        "Keywords": ["battery", "power", "charge", "plugged in", "remaining"],
+        "Aliases": ["battery status", "show battery percentage", "power percentage"],
+        "Dependencies": "none"
+    },
+    "network_status": {
+        "Purpose": "Retrieve current network status, hostname, local IP, public IP, and upload/download traffic (read-only system information).",
+        "Arguments": "none",
+        "Keywords": ["network", "internet", "ip", "connection", "wifi", "ethernet"],
+        "Aliases": ["network status", "what is my ip", "check internet connection"],
+        "Dependencies": "none"
+    },
+    "list_processes": {
+        "Purpose": "List running system processes with PID, name, CPU, and Memory usage (read-only system information).",
+        "Arguments": "sort_by (str, optional, defaults to 'cpu'), limit (int, optional, defaults to 20)",
+        "Keywords": ["processes", "tasks", "running", "cpu", "memory", "list"],
+        "Aliases": ["show running tasks", "process list", "top processes"],
+        "Dependencies": "none"
+    },
+    "get_screen_resolution": {
+        "Purpose": "Retrieve the display resolution and bounds for all connected screens (read-only system information).",
+        "Arguments": "none",
+        "Keywords": ["resolution", "screen", "display", "monitor", "bounds", "size"],
+        "Aliases": ["screen size", "monitor resolution", "show display resolution"],
         "Dependencies": "none"
     }
 }

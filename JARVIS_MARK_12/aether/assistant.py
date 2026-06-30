@@ -11,8 +11,9 @@ Orchestrates the hierarchical AI pipeline for Aether:
 import os
 import time
 import logging
+import asyncio
 from pathlib import Path
-from typing import Dict, Any, Tuple, List
+from typing import Dict, Any, Tuple, List, Optional
 
 # New pipeline steps
 from aether.registry.tools import get_tools_by_category, list_tools
@@ -24,6 +25,8 @@ from aether.validation.rule_validator import validate_plan_steps, map_arguments_
 from aether.validation.schema_validator import validate_parameters
 from aether.validation.safety_checker import needs_safety_confirmation, ask_user_confirmation
 from aether.executor.executor import execute_tool
+from aether.api.events import EventManager
+from aether.api.prompt import prompt_user_sync
 
 logger = logging.getLogger(__name__)
 
@@ -55,20 +58,21 @@ def resolve_special_folders(tool_name: str, parameters: Dict[str, Any]) -> Dict[
     return resolved
 
 def handle_missing_parameters(tool_name: str, parameters: Dict[str, Any], metrics: Dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
-    """Prompts the user via console input for missing parameters instead of failing."""
+    """Prompts the user via prompt_user_sync for missing parameters instead of failing."""
     
     # 1. create_file location clarification
     if tool_name == "create_file":
         filename = parameters.get("filename")
         if not filename:
-            filename = input("Enter name of the file to create: ").strip()
+            filename = prompt_user_sync("Enter name of the file to create:", [])
             if not filename:
                 return parameters, False
             parameters["filename"] = filename
             metrics["clarification"] = "Required"
             
         location = parameters.get("location")
-        if not location:
+        is_resolved = location and (location.startswith("_USE_EXISTING_:") or location.startswith("_ALREADY_OPENED_:") or "?create_another=true" in location)
+        if not is_resolved:
             # Check for existing duplicate files first
             from aether.tools.indexer import get_db_connection
             conn = get_db_connection()
@@ -78,74 +82,106 @@ def handle_missing_parameters(tool_name: str, parameters: Dict[str, Any], metric
             conn.close()
             
             if rows:
-                print(f"\nA file named '{filename}' already exists:")
-                for idx, r in enumerate(rows, 1):
-                    loc = r["relative_location"]
-                    suffix = f" ({loc})" if loc else ""
-                    print(f"  {idx}. {r['absolute_path']}{suffix}")
-                print("\nWhat would you like to do?")
-                print("  1. Open Existing")
-                print("  2. Create Another")
-                print("  3. Cancel")
+                title = f"A file named '{filename}' already exists. What would you like to do?"
+                options = ["Choose Existing", "Open Existing", "Create Another", "Cancel"]
+                choice = prompt_user_sync(title, options)
+                try:
+                    choice_int = int(choice)
+                except ValueError:
+                    choice_int = -1
+                    for idx_opt, opt in enumerate(options, 1):
+                        if choice.lower() in opt.lower():
+                            choice_int = idx_opt
+                            break
                 
-                while True:
-                    choice = input("Enter selection (1-3): ").strip()
-                    if choice == '1':
-                        from pathlib import Path
-                        from aether.tools.file_tools import resolve_filename
-                        if len(rows) == 1:
-                            dest = Path(rows[0]["absolute_path"])
-                        else:
-                            dest = resolve_filename(filename, is_directory=False)
+                if choice_int == 1 or (isinstance(choice, str) and "choose" in choice.lower()):
+                    options_sub = []
+                    for r in rows:
+                        loc = r["relative_location"]
+                        suffix = f" ({loc})" if loc else ""
+                        options_sub.append(f"{r['absolute_path']}{suffix}")
+                    choice_sub = prompt_user_sync("Select which existing file to use:", options_sub)
+                    try:
+                        choice_idx = int(choice_sub) - 1
+                    except ValueError:
+                        choice_idx = -1
+                        for idx_opt, opt in enumerate(options_sub, 1):
+                            if choice_sub.lower() in opt.lower():
+                                choice_idx = idx_opt - 1
+                                break
+                    if 0 <= choice_idx < len(rows):
+                        dest = rows[choice_idx]["absolute_path"]
+                        parameters["location"] = f"_USE_EXISTING_:{dest}"
+                        return parameters, True
+                    else:
+                        return parameters, False
+                        
+                elif choice_int == 2 or (isinstance(choice, str) and "open" in choice.lower()):
+                    options_sub = []
+                    for r in rows:
+                        loc = r["relative_location"]
+                        suffix = f" ({loc})" if loc else ""
+                        options_sub.append(f"{r['absolute_path']}{suffix}")
+                    choice_sub = prompt_user_sync("Select which existing file to open:", options_sub)
+                    try:
+                        choice_idx = int(choice_sub) - 1
+                    except ValueError:
+                        choice_idx = -1
+                        for idx_opt, opt in enumerate(options_sub, 1):
+                            if choice_sub.lower() in opt.lower():
+                                choice_idx = idx_opt - 1
+                                break
+                    if 0 <= choice_idx < len(rows):
+                        dest = rows[choice_idx]["absolute_path"]
                         os.startfile(str(dest))
                         parameters["location"] = f"_ALREADY_OPENED_:{dest}"
                         return parameters, True
-                    elif choice == '2':
-                        break
-                    elif choice == '3':
+                    else:
                         return parameters, False
-                    print("Invalid selection. Please enter 1, 2, or 3.")
+                        
+                elif choice_int == 3 or (isinstance(choice, str) and "create another" in choice.lower()):
+                    pass
+                else:
+                    return parameters, False
             
             metrics["clarification"] = "Required"
-            print(f"\nWhere would you like me to create {filename}?")
-            print("  1. Desktop")
-            print("  2. Documents")
-            print("  3. Downloads")
-            print("  4. Current Directory")
-            print("  5. Custom Path")
-            while True:
-                choice = input("Enter choice (1-5): ").strip()
-                if choice == '1':
-                    parameters["location"] = str(SPECIAL_FOLDERS["desktop"]) + "?create_another=true"
-                    break
-                elif choice == '2':
-                    parameters["location"] = str(SPECIAL_FOLDERS["documents"]) + "?create_another=true"
-                    break
-                elif choice == '3':
-                    parameters["location"] = str(SPECIAL_FOLDERS["downloads"]) + "?create_another=true"
-                    break
-                elif choice == '4':
-                    parameters["location"] = os.getcwd() + "?create_another=true"
-                    break
-                elif choice == '5':
-                    cust = input("Enter custom path: ").strip()
-                    if cust:
-                        parameters["location"] = cust + "?create_another=true"
-                        break
-                print("Invalid choice. Please enter 1-5.")
+            title = f"Where would you like me to create file '{filename}'?"
+            options = ["Desktop", "Documents", "Downloads", "Current Directory", "Custom Path"]
+            choice = prompt_user_sync(title, options)
+            if choice in ('1', 'Desktop'):
+                parameters["location"] = str(SPECIAL_FOLDERS["desktop"]) + "?create_another=true"
+            elif choice in ('2', 'Documents'):
+                parameters["location"] = str(SPECIAL_FOLDERS["documents"]) + "?create_another=true"
+            elif choice in ('3', 'Downloads'):
+                parameters["location"] = str(SPECIAL_FOLDERS["downloads"]) + "?create_another=true"
+            elif choice in ('4', 'Current Directory'):
+                parameters["location"] = os.getcwd() + "?create_another=true"
+            elif choice in ('5', 'Custom Path'):
+                custom_choice = prompt_user_sync("Enter the custom folder path to create the file in:", [])
+                if not custom_choice or custom_choice.lower() in ('cancel', 'c'):
+                    return parameters, False
+                parameters["location"] = custom_choice.strip() + "?create_another=true"
+            elif choice:
+                val = choice.strip()
+                if val.lower() in ('cancel', 'c'):
+                    return parameters, False
+                parameters["location"] = val + "?create_another=true"
+            else:
+                return parameters, False
 
     # 2. create_folder location clarification
     elif tool_name == "create_folder":
         folder_name = parameters.get("folder_name")
         if not folder_name:
-            folder_name = input("Enter name of the folder to create: ").strip()
+            folder_name = prompt_user_sync("Enter name of the folder to create:", [])
             if not folder_name:
                 return parameters, False
             parameters["folder_name"] = folder_name
             metrics["clarification"] = "Required"
             
         location = parameters.get("location")
-        if not location:
+        is_resolved = location and (location.startswith("_USE_EXISTING_:") or location.startswith("_ALREADY_OPENED_:") or "?create_another=true" in location)
+        if not is_resolved:
             # Check for existing duplicate folders first
             from aether.tools.indexer import get_db_connection
             conn = get_db_connection()
@@ -155,67 +191,98 @@ def handle_missing_parameters(tool_name: str, parameters: Dict[str, Any], metric
             conn.close()
             
             if rows:
-                print(f"\nA folder named '{folder_name}' already exists:")
-                for idx, r in enumerate(rows, 1):
-                    loc = r["relative_location"]
-                    suffix = f" ({loc})" if loc else ""
-                    print(f"  {idx}. {r['absolute_path']}{suffix}")
-                print("\nWhat would you like to do?")
-                print("  1. Open Existing")
-                print("  2. Create Another")
-                print("  3. Cancel")
+                title = f"A folder named '{folder_name}' already exists. What would you like to do?"
+                options = ["Choose Existing", "Open Existing", "Create Another", "Cancel"]
+                choice = prompt_user_sync(title, options)
+                try:
+                    choice_int = int(choice)
+                except ValueError:
+                    choice_int = -1
+                    for idx_opt, opt in enumerate(options, 1):
+                        if choice.lower() in opt.lower():
+                            choice_int = idx_opt
+                            break
                 
-                while True:
-                    choice = input("Enter selection (1-3): ").strip()
-                    if choice == '1':
-                        from pathlib import Path
-                        from aether.tools.file_tools import resolve_filename
-                        if len(rows) == 1:
-                            dest = Path(rows[0]["absolute_path"])
-                        else:
-                            dest = resolve_filename(folder_name, is_directory=True)
+                if choice_int == 1 or (isinstance(choice, str) and "choose" in choice.lower()):
+                    options_sub = []
+                    for r in rows:
+                        loc = r["relative_location"]
+                        suffix = f" ({loc})" if loc else ""
+                        options_sub.append(f"{r['absolute_path']}{suffix}")
+                    choice_sub = prompt_user_sync("Select which existing folder to use:", options_sub)
+                    try:
+                        choice_idx = int(choice_sub) - 1
+                    except ValueError:
+                        choice_idx = -1
+                        for idx_opt, opt in enumerate(options_sub, 1):
+                            if choice_sub.lower() in opt.lower():
+                                choice_idx = idx_opt - 1
+                                break
+                    if 0 <= choice_idx < len(rows):
+                        dest = rows[choice_idx]["absolute_path"]
+                        parameters["location"] = f"_USE_EXISTING_:{dest}"
+                        return parameters, True
+                    else:
+                        return parameters, False
+                        
+                elif choice_int == 2 or (isinstance(choice, str) and "open" in choice.lower()):
+                    options_sub = []
+                    for r in rows:
+                        loc = r["relative_location"]
+                        suffix = f" ({loc})" if loc else ""
+                        options_sub.append(f"{r['absolute_path']}{suffix}")
+                    choice_sub = prompt_user_sync("Select which existing folder to open:", options_sub)
+                    try:
+                        choice_idx = int(choice_sub) - 1
+                    except ValueError:
+                        choice_idx = -1
+                        for idx_opt, opt in enumerate(options_sub, 1):
+                            if choice_sub.lower() in opt.lower():
+                                choice_idx = idx_opt - 1
+                                break
+                    if 0 <= choice_idx < len(rows):
+                        dest = rows[choice_idx]["absolute_path"]
                         os.startfile(str(dest))
                         parameters["location"] = f"_ALREADY_OPENED_:{dest}"
                         return parameters, True
-                    elif choice == '2':
-                        break
-                    elif choice == '3':
+                    else:
                         return parameters, False
-                    print("Invalid selection. Please enter 1, 2, or 3.")
+                        
+                elif choice_int == 3 or (isinstance(choice, str) and "create another" in choice.lower()):
+                    pass
+                else:
+                    return parameters, False
             
             metrics["clarification"] = "Required"
-            print(f"\nWhere would you like me to create folder '{folder_name}'?")
-            print("  1. Desktop")
-            print("  2. Documents")
-            print("  3. Downloads")
-            print("  4. Current Directory")
-            print("  5. Custom Path")
-            while True:
-                choice = input("Enter choice (1-5): ").strip()
-                if choice == '1':
-                    parameters["location"] = str(SPECIAL_FOLDERS["desktop"]) + "?create_another=true"
-                    break
-                elif choice == '2':
-                    parameters["location"] = str(SPECIAL_FOLDERS["documents"]) + "?create_another=true"
-                    break
-                elif choice == '3':
-                    parameters["location"] = str(SPECIAL_FOLDERS["downloads"]) + "?create_another=true"
-                    break
-                elif choice == '4':
-                    parameters["location"] = os.getcwd() + "?create_another=true"
-                    break
-                elif choice == '5':
-                    cust = input("Enter custom path: ").strip()
-                    if cust:
-                        parameters["location"] = cust + "?create_another=true"
-                        break
-                print("Invalid choice. Please enter 1-5.")
+            title = f"Where would you like me to create folder '{folder_name}'?"
+            options = ["Desktop", "Documents", "Downloads", "Current Directory", "Custom Path"]
+            choice = prompt_user_sync(title, options)
+            if choice in ('1', 'Desktop'):
+                parameters["location"] = str(SPECIAL_FOLDERS["desktop"]) + "?create_another=true"
+            elif choice in ('2', 'Documents'):
+                parameters["location"] = str(SPECIAL_FOLDERS["documents"]) + "?create_another=true"
+            elif choice in ('3', 'Downloads'):
+                parameters["location"] = str(SPECIAL_FOLDERS["downloads"]) + "?create_another=true"
+            elif choice in ('4', 'Current Directory'):
+                parameters["location"] = os.getcwd() + "?create_another=true"
+            elif choice in ('5', 'Custom Path'):
+                custom_choice = prompt_user_sync("Enter the custom folder path to create the folder in:", [])
+                if not custom_choice or custom_choice.lower() in ('cancel', 'c'):
+                    return parameters, False
+                parameters["location"] = custom_choice.strip() + "?create_another=true"
+            elif choice:
+                val = choice.strip()
+                if val.lower() in ('cancel', 'c'):
+                    return parameters, False
+                parameters["location"] = val + "?create_another=true"
+            else:
+                return parameters, False
 
     # 3. move_file destination clarification
     elif tool_name == "move_file":
         source = parameters.get("source")
         if not source:
-            source = input("Enter source file/folder to move: ").strip()
+            source = prompt_user_sync("Enter source file/folder to move:", [])
             if not source:
                 return parameters, False
             parameters["source"] = source
@@ -223,8 +290,8 @@ def handle_missing_parameters(tool_name: str, parameters: Dict[str, Any], metric
         dest = parameters.get("destination")
         if not dest:
             metrics["clarification"] = "Required"
-            dest = input(f"Where would you like to move {source}? ").strip()
-            if not dest:
+            dest = prompt_user_sync(f"Where would you like to move '{source}'?", ["Desktop", "Documents", "Downloads"])
+            if not dest or dest.lower() in ('cancel', 'c'):
                 return parameters, False
             parameters["destination"] = dest
 
@@ -232,7 +299,7 @@ def handle_missing_parameters(tool_name: str, parameters: Dict[str, Any], metric
     elif tool_name == "copy_file":
         source = parameters.get("source")
         if not source:
-            source = input("Enter source file to copy: ").strip()
+            source = prompt_user_sync("Enter source file to copy:", [])
             if not source:
                 return parameters, False
             parameters["source"] = source
@@ -240,8 +307,8 @@ def handle_missing_parameters(tool_name: str, parameters: Dict[str, Any], metric
         dest = parameters.get("destination")
         if not dest:
             metrics["clarification"] = "Required"
-            dest = input(f"Where would you like to copy {source}? ").strip()
-            if not dest:
+            dest = prompt_user_sync(f"Where would you like to copy '{source}'?", ["Desktop", "Documents", "Downloads"])
+            if not dest or dest.lower() in ('cancel', 'c'):
                 return parameters, False
             parameters["destination"] = dest
 
@@ -249,7 +316,7 @@ def handle_missing_parameters(tool_name: str, parameters: Dict[str, Any], metric
     elif tool_name == "extract_archive":
         archive = parameters.get("archive")
         if not archive:
-            archive = input("Enter zip archive path: ").strip()
+            archive = prompt_user_sync("Enter zip archive path:", [])
             if not archive:
                 return parameters, False
             parameters["archive"] = archive
@@ -257,8 +324,8 @@ def handle_missing_parameters(tool_name: str, parameters: Dict[str, Any], metric
         dest = parameters.get("destination")
         if not dest:
             metrics["clarification"] = "Required"
-            dest = input(f"Where should I extract {archive}? ").strip()
-            if not dest:
+            dest = prompt_user_sync(f"Where should I extract '{archive}'?", ["Desktop", "Documents", "Downloads"])
+            if not dest or dest.lower() in ('cancel', 'c'):
                 return parameters, False
             parameters["destination"] = dest
 
@@ -266,7 +333,7 @@ def handle_missing_parameters(tool_name: str, parameters: Dict[str, Any], metric
     elif tool_name == "download_file":
         url = parameters.get("url")
         if not url:
-            url = input("Enter URL to download from: ").strip()
+            url = prompt_user_sync("Enter URL to download from:", [])
             if not url:
                 return parameters, False
             parameters["url"] = url
@@ -274,17 +341,68 @@ def handle_missing_parameters(tool_name: str, parameters: Dict[str, Any], metric
         dest = parameters.get("destination")
         if not dest:
             metrics["clarification"] = "Required"
-            dest = input("Where would you like me to save it? ").strip()
-            if not dest:
+            dest = prompt_user_sync("Where would you like me to save it?", ["Desktop", "Documents", "Downloads"])
+            if not dest or dest.lower() in ('cancel', 'c'):
                 return parameters, False
             parameters["destination"] = dest
+
+    # 6.5. write_file clarification
+    elif tool_name == "write_file":
+        path_val = parameters.get("path")
+        if not path_val:
+            metrics["clarification"] = "Required"
+            path_val = prompt_user_sync("Enter name of the file to write:", [])
+            if not path_val:
+                return parameters, False
+            parameters["path"] = path_val
+            
+        p = Path(parameters["path"])
+        if not p.is_absolute() and len(p.parts) <= 1:
+            metrics["clarification"] = "Required"
+            filename = p.name
+            title = f"Where would you like me to save file '{filename}'?"
+            options = ["Desktop", "Documents", "Downloads", "Current Directory", "Custom Path"]
+            choice = prompt_user_sync(title, options)
+            
+            dest_dir = None
+            if choice in ('1', 'Desktop'):
+                dest_dir = SPECIAL_FOLDERS["desktop"]
+            elif choice in ('2', 'Documents'):
+                dest_dir = SPECIAL_FOLDERS["documents"]
+            elif choice in ('3', 'Downloads'):
+                dest_dir = SPECIAL_FOLDERS["downloads"]
+            elif choice in ('4', 'Current Directory'):
+                dest_dir = Path(os.getcwd())
+            elif choice in ('5', 'Custom Path'):
+                custom_choice = prompt_user_sync("Enter the custom folder path to save the file in:", [])
+                if not custom_choice or custom_choice.lower() in ('cancel', 'c'):
+                    return parameters, False
+                dest_dir = Path(custom_choice.strip())
+            elif choice:
+                val = choice.strip()
+                if val.lower() in ('cancel', 'c'):
+                    return parameters, False
+                dest_dir = Path(val)
+            else:
+                return parameters, False
+                
+            if dest_dir:
+                parameters["path"] = str((dest_dir / filename).resolve())
+                
+        content = parameters.get("content")
+        if content is None:
+            metrics["clarification"] = "Required"
+            content = prompt_user_sync("Enter the content to write to the file:", [])
+            if content is None:
+                return parameters, False
+            parameters["content"] = content
 
     # 7. append_file clarification
     elif tool_name == "append_file":
         filename = parameters.get("filename")
         if not filename:
             metrics["clarification"] = "Required"
-            filename = input("Enter the file name to append to: ").strip()
+            filename = prompt_user_sync("Enter the file name to append to:", [])
             if not filename:
                 return parameters, False
             parameters["filename"] = filename
@@ -292,14 +410,14 @@ def handle_missing_parameters(tool_name: str, parameters: Dict[str, Any], metric
         content = parameters.get("content")
         if not content:
             metrics["clarification"] = "Required"
-            content = input("Enter the content to append: ").strip()
+            content = prompt_user_sync("Enter the content to append:", [])
             if not content:
                 return parameters, False
             parameters["content"] = content
 
     # 8. read_file_content clarification
     elif tool_name == "read_file_content":
-        file_path = parameters.get("file_path")
+        file_path = parameters.get("file_path") or parameters.get("filename") or parameters.get("path")
         if not file_path:
             metrics["clarification"] = "Required"
             supported_extensions = {".txt", ".md", ".py", ".json", ".csv", ".log"}
@@ -313,36 +431,83 @@ def handle_missing_parameters(tool_name: str, parameters: Dict[str, Any], metric
                 pass
 
             if files_in_cwd:
-                print("\nSelect a file to read:")
-                for idx, file in enumerate(files_in_cwd, 1):
-                    print(f"  {idx}. {file.name}")
-                print(f"  {len(files_in_cwd) + 1}. Custom Path")
-
-                while True:
-                    choice = input(f"Enter choice (1-{len(files_in_cwd) + 1}): ").strip()
-                    if not choice:
-                        return parameters, False
-                    try:
-                        choice_idx = int(choice) - 1
-                        if 0 <= choice_idx < len(files_in_cwd):
-                            parameters["file_path"] = str(files_in_cwd[choice_idx].resolve())
-                            break
-                        elif choice_idx == len(files_in_cwd):
-                            cust = input("Enter custom file path: ").strip()
-                            if cust:
-                                parameters["file_path"] = cust
-                                break
-                            else:
-                                return parameters, False
-                    except ValueError:
-                        parameters["file_path"] = choice
-                        break
-                    print(f"Invalid choice. Please enter 1-{len(files_in_cwd) + 1} or type a filename.")
-            else:
-                file_path = input("Enter the file path to read: ").strip()
-                if not file_path:
+                options = [file.name for file in files_in_cwd] + ["Custom Path"]
+                choice = prompt_user_sync("Select a file to read:", options)
+                if not choice:
                     return parameters, False
-                parameters["file_path"] = file_path
+                try:
+                    choice_idx = int(choice) - 1
+                    if 0 <= choice_idx < len(files_in_cwd):
+                        parameters["file_path"] = str(files_in_cwd[choice_idx].resolve())
+                    elif choice_idx == len(files_in_cwd):
+                        cust = prompt_user_sync("Enter custom file path:", [])
+                        if cust:
+                            parameters["file_path"] = cust
+                        else:
+                            return parameters, False
+                except ValueError:
+                    parameters["file_path"] = choice
+            else:
+                file_path_input = prompt_user_sync("Enter the file path to read:", [])
+                if not file_path_input:
+                    return parameters, False
+                parameters["file_path"] = file_path_input
+        else:
+            parameters["file_path"] = file_path
+
+    # 9. compress_files output clarification
+    elif tool_name == "compress_files":
+        sources = parameters.get("sources")
+        if not sources:
+            s_singular = parameters.get("source")
+            if s_singular:
+                sources = [s_singular]
+                parameters["sources"] = sources
+            else:
+                sources_str = prompt_user_sync("Enter comma-separated files or folders to compress:", [])
+                if not sources_str:
+                    return parameters, False
+                sources = [s.strip() for s in sources_str.split(",")]
+                parameters["sources"] = sources
+                
+        output = parameters.get("output")
+        if not output or not Path(output).is_absolute():
+            metrics["clarification"] = "Required"
+            default_name = "Archive.zip"
+            if output and not Path(output).is_dir():
+                default_name = Path(output).name
+            elif sources:
+                try:
+                    first_src = Path(sources[0]).name
+                    default_name = f"{first_src}.zip" if first_src else "Archive.zip"
+                except Exception:
+                    pass
+            
+            title = f"Where would you like to save the compressed archive '{default_name}'?"
+            options = ["Desktop", "Documents", "Downloads", "Current Directory", "Custom Path"]
+            choice = prompt_user_sync(title, options)
+            if choice in ('1', 'Desktop'):
+                parameters["output"] = str(SPECIAL_FOLDERS["desktop"] / default_name)
+            elif choice in ('2', 'Documents'):
+                parameters["output"] = str(SPECIAL_FOLDERS["documents"] / default_name)
+            elif choice in ('3', 'Downloads'):
+                parameters["output"] = str(SPECIAL_FOLDERS["downloads"] / default_name)
+            elif choice in ('4', 'Current Directory'):
+                parameters["output"] = str(Path(os.getcwd()) / default_name)
+            elif choice in ('5', 'Custom Path') or choice:
+                val = choice.strip()
+                if val.lower() in ('cancel', 'c'):
+                    return parameters, False
+                try:
+                    p_val = Path(val)
+                    if p_val.is_dir() or not p_val.suffix:
+                        parameters["output"] = str(p_val / default_name)
+                    else:
+                        parameters["output"] = val
+                except Exception:
+                    parameters["output"] = val
+            else:
+                return parameters, False
 
     return parameters, True
 
@@ -356,6 +521,7 @@ def map_planner_parameters(parameters: Dict[str, Any]) -> Dict[str, Any]:
             mapped["destination"] = v
         elif k == "file_path":
             mapped["filename"] = v
+            mapped["file_path"] = v
         elif k == "clipboard_text":
             mapped["text"] = v
         elif k == "directory_path":
@@ -370,11 +536,116 @@ def map_planner_parameters(parameters: Dict[str, Any]) -> Dict[str, Any]:
             mapped[k] = v
     return mapped
 
-def run_query(query: str) -> Dict[str, Any]:
+def get_step_description(tool: str, args: dict) -> str:
+    """Provides a human-friendly sentence describing what a step/tool call will do."""
+    if not args:
+        args = {}
+    if tool == "open_app":
+        return f"Open {args.get('app_name', 'application')}"
+    elif tool == "close_app":
+        return f"Close {args.get('app_name', 'application')}"
+    elif tool == "switch_to_app":
+        return f"Switch to {args.get('app_name', 'application')}"
+    elif tool == "move_file":
+        return f"Move '{args.get('source', '')}' to '{args.get('destination', '')}'"
+    elif tool == "copy_file":
+        return f"Copy '{args.get('source', '')}' to '{args.get('destination', '')}'"
+    elif tool == "rename_file":
+        return f"Rename '{args.get('source', '')}' to '{args.get('new_name', '')}'"
+    elif tool == "delete_file":
+        return f"Delete file at '{args.get('path', '')}'"
+    elif tool == "search_files":
+        return f"Search files for '{args.get('query', '')}'"
+    elif tool == "open_file":
+        return f"Open file '{args.get('path', '')}'"
+    elif tool == "create_file":
+        return f"Create file '{args.get('filename', args.get('path', ''))}' in '{args.get('location', '')}'"
+    elif tool == "create_folder":
+        return f"Create folder '{args.get('folder_name', '')}' in '{args.get('location', '')}'"
+    elif tool == "delete_folder":
+        return f"Delete folder '{args.get('folder_name', '')}'"
+    elif tool == "list_directory":
+        return f"List contents of '{args.get('path', '')}'"
+    elif tool == "compress_files":
+        return f"Compress sources into '{args.get('output', '')}'"
+    elif tool == "extract_archive":
+        return f"Extract '{args.get('archive', '')}' to '{args.get('destination', '')}'"
+    elif tool == "file_info":
+        return f"Get details for '{args.get('path', '')}'"
+    elif tool == "append_file":
+        return f"Append text to '{args.get('filename', args.get('path', ''))}'"
+    elif tool == "write_file":
+        return f"Write text to '{args.get('path', '')}'"
+    elif tool == "duplicate_file":
+        return f"Duplicate file '{args.get('source_path', args.get('source', ''))}'"
+    elif tool == "search_web":
+        return f"Search web for '{args.get('query', '')}'"
+    elif tool == "search_youtube":
+        return f"Search YouTube for '{args.get('query', '')}'"
+    elif tool == "open_url":
+        return f"Open URL {args.get('url', '')}"
+    elif tool == "download_file":
+        return f"Download from '{args.get('url', '')}'"
+    elif tool == "open_new_tab":
+        return f"Open new browser tab at '{args.get('url', '')}'"
+    elif tool == "close_tab":
+        return "Close current browser tab"
+    elif tool == "list_tabs":
+        return "List active browser tabs"
+    elif tool == "switch_tab":
+        return f"Switch to browser tab {args.get('tab', '')}"
+    elif tool == "shutdown_pc":
+        return "Shut down PC"
+    elif tool == "restart_pc":
+        return "Restart PC"
+    elif tool == "sleep_pc":
+        return "Put PC to sleep"
+    elif tool == "lock_pc":
+        return "Lock PC screen"
+    elif tool == "set_volume":
+        return f"Set volume to {args.get('level', 0)}%"
+    elif tool == "mute_volume":
+        return "Mute audio volume"
+    elif tool == "unmute_volume":
+        return "Unmute audio volume"
+    elif tool == "set_brightness":
+        return f"Set brightness to {args.get('level', 0)}%"
+    elif tool == "take_screenshot":
+        return "Capture screen screenshot"
+    elif tool == "extract_text_from_image":
+        return f"Extract text from image '{args.get('path', '')}'"
+    elif tool == "open_notepad_and_write":
+        return "Open Notepad and type text"
+    elif tool == "read_file_content":
+        return f"Read contents of '{args.get('file_path', args.get('path', ''))}'"
+    elif tool == "clear_clipboard":
+        return "Clear clipboard contents"
+    elif tool == "get_clipboard":
+        return "Get current clipboard text"
+    elif tool == "set_clipboard":
+        return "Set clipboard text content"
+    elif tool == "send_email":
+        return f"Send email to '{args.get('recipient', '')}'"
+    elif tool == "cpu_usage":
+        return "Check CPU usage"
+    elif tool == "ram_usage":
+        return "Check RAM memory usage"
+    elif tool == "disk_usage":
+        return "Check disk storage usage"
+    elif tool == "battery_status":
+        return "Check battery status"
+    elif tool == "network_status":
+        return "Check network connection status"
+    elif tool == "list_processes":
+        return f"List top processes sorted by {args.get('sort_by', 'cpu')}"
+    elif tool == "get_screen_resolution":
+        return "Check screen display resolution"
+    return f"Execute {tool}"
+
+async def process_query(query: str, events: Optional[EventManager] = None) -> Dict[str, Any]:
     """
-    Executes a natural language query through the hierarchical Aether assistant pipeline:
-    User Query -> Query Normalizer -> Qwen2.5-3B Router -> Python Category Engine ->
-    Qwen3-7B-Instruct Planner -> Rule Validator -> Executor.
+    Executes a natural language query through the hierarchical Aether assistant pipeline,
+    dispatching live progress updates to an EventManager.
     """
     total_start = time.perf_counter()
     metrics = {
@@ -403,6 +674,8 @@ def run_query(query: str) -> Dict[str, Any]:
     try:
         # Logging stage: User Query
         logger.info(f"User Query: {query}")
+        if events:
+            await events.emit_thinking("Analyzing query...")
         
         # Preprocessing: Query Normalizer
         normalized_query = normalize_query(query)
@@ -410,8 +683,10 @@ def run_query(query: str) -> Dict[str, Any]:
         steps_log["normalized_query"] = normalized_query
         
         # Step 1: Router Stage (Qwen2.5-3B)
+        if events:
+            await events.emit_thinking("Selecting appropriate tool categories...")
         cat_start = time.perf_counter()
-        router_output = select_categories(normalized_query)
+        router_output = await asyncio.to_thread(select_categories, normalized_query)
         metrics["intent_time"] = time.perf_counter() - cat_start
         logger.info(f"Router Output: {router_output}")
         steps_log["router_output"] = router_output
@@ -427,25 +702,30 @@ def run_query(query: str) -> Dict[str, Any]:
         steps_log["candidate_tools"] = candidate_tools
         
         # Step 3: Planner Stage (Qwen3-7B-Instruct)
+        if events:
+            await events.emit_thinking("Formulating tool execution plan...")
         planner_start = time.perf_counter()
-        planned_steps = plan_actions(query, normalized_query, candidate_tools)
+        planned_steps = await asyncio.to_thread(plan_actions, query, normalized_query, candidate_tools)
         metrics["param_time"] = time.perf_counter() - planner_start
         logger.info(f"Planner Output: {planned_steps}")
         steps_log["planner_output"] = planned_steps
         
         # Step 4: Python Rule Validator (Non-LLM)
         val_start = time.perf_counter()
-        is_valid, validation_errors = validate_plan_steps(planned_steps)
+        is_valid, validation_errors = await asyncio.to_thread(validate_plan_steps, planned_steps)
         metrics["validation_time"] = time.perf_counter() - val_start
         logger.info(f"Validation Result: Valid={is_valid}, Errors={validation_errors}")
         steps_log["validation_result"] = {
             "success": is_valid,
             "errors": validation_errors
         }
+
         
         if not is_valid:
             metrics["total_time"] = time.perf_counter() - total_start
             metrics["execution_status"] = "Failed"
+            if events:
+                await events.emit_error(f"Rule validation failed: {validation_errors}")
             return {
                 "success": False,
                 "error": f"Rule validation failed: {validation_errors}",
@@ -453,14 +733,24 @@ def run_query(query: str) -> Dict[str, Any]:
                 "output": "Plan validation failed.",
                 "metrics": metrics
             }
+
+        # Emit visual plan step list
+        if events:
+            steps_desc = [get_step_description(s.get("tool"), s.get("arguments", {})) for s in planned_steps]
+            await events.emit_plan(steps_desc)
             
-        # Step 5: Execute actions sequentially
+        # Step 5: Execute actions sequentially (delegating tasks to a background thread to prevent loop blocking)
         execution_outputs = []
         exec_start_total = time.perf_counter()
         
         for step in planned_steps:
             tool = step["tool"]
             arguments = step["arguments"]
+            step_desc = get_step_description(tool, arguments)
+            
+            if events:
+                await events.emit_step_start(step_desc)
+                await events.emit_tool_start(tool)
             
             # Map simplified parameters to schema-compliant fields
             mapped_schema_args = map_arguments_to_schema_fields(tool, arguments)
@@ -516,12 +806,21 @@ def run_query(query: str) -> Dict[str, Any]:
  
             # Resolve special folders and handle clarifications
             mapped_params = resolve_special_folders(tool, mapped_params)
-            mapped_params, p_success = handle_missing_parameters(tool, mapped_params, metrics)
+            
+            # Execute clarifications inside threadpool to keep main ASGI loop alive
+            mapped_params, p_success = await asyncio.to_thread(handle_missing_parameters, tool, mapped_params, metrics)
+            # Clean up/remove old propagation (now done post-execution)
+            pass
+                                            
             if not p_success:
                 metrics["execution_time"] = time.perf_counter() - exec_start_total
                 metrics["total_time"] = time.perf_counter() - total_start
                 metrics["clarification"] = "Aborted"
                 metrics["execution_status"] = "Deferred"
+                if events:
+                    await events.emit_tool_complete(tool, False)
+                    await events.emit_step_complete(step_desc, False)
+                    await events.emit_error("Required parameter was omitted by user.")
                 return {
                     "success": False,
                     "error": "Required parameter was omitted by user.",
@@ -533,11 +832,16 @@ def run_query(query: str) -> Dict[str, Any]:
             mapped_params = resolve_special_folders(tool, mapped_params)
             
             if needs_safety_confirmation(tool):
-                confirmed = ask_user_confirmation(tool, mapped_params)
+                # Execute confirmations inside threadpool
+                confirmed = await asyncio.to_thread(ask_user_confirmation, tool, mapped_params)
                 if not confirmed:
                     metrics["execution_time"] = time.perf_counter() - exec_start_total
                     metrics["total_time"] = time.perf_counter() - total_start
                     metrics["execution_status"] = "Deferred"
+                    if events:
+                        await events.emit_tool_complete(tool, False)
+                        await events.emit_step_complete(step_desc, False)
+                        await events.emit_error("Safety Confirmation Denied")
                     return {
                         "success": False,
                         "error": "Safety Confirmation Denied",
@@ -548,12 +852,50 @@ def run_query(query: str) -> Dict[str, Any]:
                 if tool == "send_email":
                     mapped_params["confirmed"] = True
                     
-            # Execute tool
-            exec_success, exec_output = execute_tool(tool, mapped_params)
+            # Execute tool inside threadpool
+            exec_success, exec_output = await asyncio.to_thread(execute_tool, tool, mapped_params)
+            if events:
+                await events.emit_tool_complete(tool, exec_success)
+                await events.emit_step_complete(step_desc, exec_success)
+                
+            if exec_success and (tool in ("create_file", "create_folder")):
+                import re
+                match = re.search(r"'([^']+)'", exec_output)
+                if match:
+                    selected_path = match.group(1)
+                    name_key = "filename" if tool == "create_file" else "folder_name"
+                    name_val = mapped_params.get(name_key)
+                    if name_val:
+                        # Propagate selected_path to subsequent steps in planned_steps
+                        for subsequent_step in planned_steps[planned_steps.index(step) + 1:]:
+                            sub_args = subsequent_step.get("arguments", {})
+                            for sub_k, sub_v in sub_args.items():
+                                if isinstance(sub_v, str):
+                                    if sub_v == name_val:
+                                        sub_args[sub_k] = selected_path
+                                    elif sub_v.replace("\\", "/").startswith(name_val + "/"):
+                                        rel_part = sub_v[len(name_val):].lstrip("/\\")
+                                        sub_args[sub_k] = str(Path(selected_path) / rel_part)
+                                elif isinstance(sub_v, list):
+                                    for idx_v, item in enumerate(sub_v):
+                                        if isinstance(item, str):
+                                            if item == name_val:
+                                                sub_v[idx_v] = selected_path
+                                            elif item.replace("\\", "/").startswith(name_val + "/"):
+                                                rel_part = item[len(name_val):].lstrip("/\\")
+                                                sub_v[idx_v] = str(Path(selected_path) / rel_part)
+                
             if not exec_success:
                 metrics["execution_time"] = time.perf_counter() - exec_start_total
                 metrics["total_time"] = time.perf_counter() - total_start
                 metrics["execution_status"] = "Failed"
+                
+                error_code = None
+                if "EMAIL_NOT_CONNECTED" in exec_output:
+                    error_code = "EMAIL_NOT_CONNECTED"
+                    
+                if events:
+                    await events.emit_error(f"Failed executing {tool}: {exec_output}", error_code=error_code)
                 return {
                     "success": False,
                     "error": exec_output,
@@ -598,6 +940,8 @@ def run_query(query: str) -> Dict[str, Any]:
         combined_output = " | ".join(str(o) for o in execution_outputs)
         logger.info(f"Execution Result: {combined_output}")
         steps_log["execution_result"] = combined_output
+        if events:
+            await events.emit_final(combined_output)
         return {
             "success": True,
             "error": None,
@@ -610,6 +954,8 @@ def run_query(query: str) -> Dict[str, Any]:
         logger.exception(f"Exception occurred in assistant pipeline: {e}")
         metrics["total_time"] = time.perf_counter() - total_start
         metrics["execution_status"] = "Failed"
+        if events:
+            await events.emit_error(str(e))
         return {
             "success": False,
             "error": str(e),
@@ -617,3 +963,7 @@ def run_query(query: str) -> Dict[str, Any]:
             "output": f"Pipeline error: {e}",
             "metrics": metrics
         }
+
+def run_query(query: str) -> Dict[str, Any]:
+    """Sync wrapper for process_query to preserve backward compatibility for CLI."""
+    return asyncio.run(process_query(query))

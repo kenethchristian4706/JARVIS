@@ -65,7 +65,8 @@ class ListDirectorySchema(BaseModel):
 
 class CompressFilesSchema(BaseModel):
     source_paths: List[str] = Field(description="List of paths of files or folders to compress.")
-    output_path: str = Field(description="Path of the output zip file to create.")
+    output_path: Optional[str] = Field(None, description="Path of the output zip file to create.")
+
 
 class ExtractArchiveSchema(BaseModel):
     archive_path: str = Field(description="Path of the zip archive to extract.")
@@ -176,4 +177,55 @@ class SendEmailSchema(BaseModel):
     recipient: str = Field(description="Recipient email address.")
     subject: str = Field(description="Subject line of the email.")
     body: str = Field(description="Body content of the email.")
+    cc: Optional[str] = Field(None, description="Optional CC recipient email address(es).")
+    bcc: Optional[str] = Field(None, description="Optional BCC recipient email address(es).")
+    attachments: Optional[List[str]] = Field(None, description="Optional list of absolute file paths to attach.")
     confirmed: Optional[bool] = Field(False, description="Whether the user confirmed sending the email.")
+
+class ListEmailsSchema(BaseModel):
+    limit: Optional[int] = Field(10, description="Maximum number of emails to list, defaults to 10.")
+    unread_only: Optional[bool] = Field(False, description="If True, only retrieve unread emails.")
+
+class ReadEmailSchema(BaseModel):
+    email_id: str = Field(description="UID, inbox sequence index (1-based from newest), or 'latest' email to read.")
+
+
+# --- Newly Added Schemas for write_file and duplicate_file ---
+
+class WriteFileSchema(BaseModel):
+    path: str = Field(description="Path of the text file to write or overwrite.")
+    content: str = Field(description="Full text content to write to the file.")
+    encoding: Optional[str] = Field("utf-8", description="Encoding format for the file, defaults to 'utf-8'.")
+    create_parent: Optional[bool] = Field(False, description="Create the parent directory if it does not exist.")
+
+class DuplicateFileSchema(BaseModel):
+    source_path: str = Field(description="Path of the source file to duplicate.")
+    destination_path: Optional[str] = Field(None, description="Optional custom destination path (folder or file path).")
+    overwrite: Optional[bool] = Field(False, description="Whether to overwrite an existing destination file.")
+
+
+# --- Newly Added Schemas for System Info Tools ---
+
+class CpuUsageSchema(BaseModel):
+    pass
+
+class RamUsageSchema(BaseModel):
+    pass
+
+class DiskUsageSchema(BaseModel):
+    pass
+
+class BatteryStatusSchema(BaseModel):
+    pass
+
+class NetworkStatusSchema(BaseModel):
+    pass
+
+class ListProcessesSchema(BaseModel):
+    sort_by: Optional[str] = Field("cpu", description="Criteria to sort processes by ('cpu', 'memory', 'name').")
+    limit: Optional[int] = Field(20, description="Maximum number of processes to return (defaults to 20).")
+
+class GetScreenResolutionSchema(BaseModel):
+    pass
+
+

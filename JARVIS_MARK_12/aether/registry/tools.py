@@ -129,6 +129,16 @@ TOOLS = {
         "description": "Read text content from supported files (.txt, .md, .py, .json, .csv, .log).",
         "schema_class": schemas.ReadFileContentSchema
     },
+    "write_file": {
+        "category": "filesystem",
+        "description": "Creates a new text file or completely replaces the contents of an existing text file. Never appends existing content.",
+        "schema_class": schemas.WriteFileSchema
+    },
+    "duplicate_file": {
+        "category": "filesystem",
+        "description": "Creates a duplicate copy of a file. Automatically generates a destination filename if one is not provided.",
+        "schema_class": schemas.DuplicateFileSchema
+    },
 
     # --- compression ---
     "compress_files": {
@@ -189,8 +199,18 @@ TOOLS = {
     # --- email ---
     "send_email": {
         "category": "email",
-        "description": "Send an email using SMTP server configurations. This action requires safety confirmation.",
+        "description": "Send an email using the connected account. This action requires safety confirmation.",
         "schema_class": schemas.SendEmailSchema
+    },
+    "list_emails": {
+        "category": "email",
+        "description": "List summaries of recent emails.",
+        "schema_class": schemas.ListEmailsSchema
+    },
+    "read_email": {
+        "category": "email",
+        "description": "Read the contents of a selected email.",
+        "schema_class": schemas.ReadEmailSchema
     },
 
     # --- power ---
@@ -262,6 +282,41 @@ TOOLS = {
         "category": "system",
         "description": "Decrease the display screen brightness by a default step of 10%.",
         "schema_class": schemas.DecreaseBrightnessSchema
+    },
+    "cpu_usage": {
+        "category": "system",
+        "description": "Retrieve current CPU utilization metrics. This is a read-only system information tool.",
+        "schema_class": schemas.CpuUsageSchema
+    },
+    "ram_usage": {
+        "category": "system",
+        "description": "Retrieve current RAM memory usage metrics. This is a read-only system information tool.",
+        "schema_class": schemas.RamUsageSchema
+    },
+    "disk_usage": {
+        "category": "system",
+        "description": "Retrieve storage space information for all mounted physical drives. This is a read-only system information tool.",
+        "schema_class": schemas.DiskUsageSchema
+    },
+    "battery_status": {
+        "category": "system",
+        "description": "Retrieve battery level, charging status, and remaining power time. This is a read-only system information tool.",
+        "schema_class": schemas.BatteryStatusSchema
+    },
+    "network_status": {
+        "category": "system",
+        "description": "Retrieve network connection status, local IP, public IP, and upload/download bytes. This is a read-only system information tool.",
+        "schema_class": schemas.NetworkStatusSchema
+    },
+    "list_processes": {
+        "category": "system",
+        "description": "Retrieve a list of currently running processes with resource usage metrics. This is a read-only system information tool.",
+        "schema_class": schemas.ListProcessesSchema
+    },
+    "get_screen_resolution": {
+        "category": "system",
+        "description": "Retrieve screen resolution and bounds for all connected displays. This is a read-only system information tool.",
+        "schema_class": schemas.GetScreenResolutionSchema
     },
 
     # --- ocr ---

@@ -390,7 +390,7 @@ def start_watchdog_observer():
     return observer
 
 def start_background_refresh():
-    """Starts watchdog monitoring and runs the initial index_all scan synchronously."""
+    """Starts watchdog monitoring and runs the initial index_all scan in a background thread."""
     global _observer
     # 1. Initialize watchdog observer
     try:
@@ -398,10 +398,14 @@ def start_background_refresh():
     except Exception as e:
         logger.error(f"Failed to start watchdog observer: {e}")
         
-    # 2. Run full scan synchronously
-    print("Building search index. Please wait...")
-    try:
-        index_all()
-    except Exception as e:
-        logger.error(f"Error during initial full index walk: {e}")
-    print("Search index built successfully!")
+    # 2. Run full scan in a background thread
+    def run_scan():
+        logger.info("Building search index in background...")
+        try:
+            index_all()
+            logger.info("Background search index built successfully!")
+        except Exception as e:
+            logger.error(f"Error during background full index walk: {e}")
+
+    threading.Thread(target=run_scan, daemon=True, name="AetherIndexerWalk").start()
+

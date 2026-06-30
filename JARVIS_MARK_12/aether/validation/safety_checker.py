@@ -16,7 +16,9 @@ HIGH_RISK_TOOLS = {
     "shutdown_pc",
     "restart_pc",
     "sleep_pc",
-    "send_email"
+    "send_email",
+    "write_file",
+    "duplicate_file"
 }
 
 def needs_safety_confirmation(tool_name: str) -> bool:
@@ -33,48 +35,57 @@ def get_confirmation_target(tool_name: str, parameters: Dict[str, Any]) -> str:
         return "the operating system"
     elif tool_name == "send_email":
         return f"email to {parameters.get('recipient')} (Subject: {parameters.get('subject')})"
+    elif tool_name == "write_file":
+        return parameters.get("path") or "unspecified file"
+    elif tool_name == "duplicate_file":
+        return parameters.get("source") or parameters.get("source_path") or "unspecified file"
     return str(parameters)
 
 def ask_user_confirmation(tool_name: str, parameters: Dict[str, Any]) -> bool:
     """
-    Prompts the user via stdin console to confirm execution of high-risk actions.
-    
-    Returns True if confirmed, False otherwise.
+    Prompts the user to confirm execution of high-risk actions.
+    If connected to a WebSocket session, uses the visual frontend popup.
+    Otherwise falls back to command-line input.
     """
     target = get_confirmation_target(tool_name, parameters)
     
     if tool_name == "delete_file":
-        prompt_msg = f"Are you sure you want to delete {target}?\nType yes to continue: "
+        prompt_msg = f"Are you sure you want to delete file '{target}'?"
     elif tool_name == "delete_folder":
-        prompt_msg = f"Are you sure you want to delete folder {target}?\nType yes to continue: "
+        prompt_msg = f"Are you sure you want to delete folder '{target}'?"
     elif tool_name == "shutdown_pc":
-        prompt_msg = "Are you sure you want to shut down the computer?\nType yes to continue: "
+        prompt_msg = "Are you sure you want to shut down the computer?"
     elif tool_name == "restart_pc":
-        prompt_msg = "Are you sure you want to restart the computer?\nType yes to continue: "
+        prompt_msg = "Are you sure you want to restart the computer?"
     elif tool_name == "sleep_pc":
-        prompt_msg = "Are you sure you want to put the computer to sleep?\nType yes to continue: "
+        prompt_msg = "Are you sure you want to put the computer to sleep?"
     elif tool_name == "send_email":
-        prompt_msg = f"Are you sure you want to send this email to {parameters.get('recipient')}?\nType yes to continue: "
+        prompt_msg = f"Are you sure you want to send this email to {parameters.get('recipient')}?"
+    elif tool_name == "write_file":
+        from pathlib import Path
+        from aether.tools.file_tools import resolve_path
+        try:
+            resolved_path = resolve_path(target)
+            exists = resolved_path.exists()
+        except Exception:
+            exists = False
+            
+        if exists:
+            prompt_msg = f"File '{target}' already exists. Are you sure you want to OVERWRITE its contents?"
+        else:
+            prompt_msg = f"Are you sure you want to create and write content to file '{target}'?"
+    elif tool_name == "duplicate_file":
+        dst = parameters.get("destination") or parameters.get("destination_path")
+        dst_str = f" to '{dst}'" if dst else ""
+        prompt_msg = f"Are you sure you want to duplicate file '{target}'{dst_str}?"
     else:
-        prompt_msg = f"Are you sure you want to execute {tool_name}?\nType yes to continue: "
+        prompt_msg = f"Are you sure you want to execute {tool_name}?"
 
-        
-    print()
-    print("=" * 60)
-    print("  [WARNING] HIGH-RISK SYSTEM OPERATION REQUESTED")
-    print("=" * 60)
-    print(f"  Action : {tool_name}")
-    print(f"  Target : {target}")
-    print("-" * 60)
-    print("  This action can alter system state or permanently delete files.")
-    print("=" * 60)
+    from aether.api.prompt import prompt_user_sync
+    title = f"[WARNING] High-Risk System Operation Requested\nAction: {tool_name}\nTarget: {target}\n\n{prompt_msg}"
+    options = ["Yes, confirm action", "No, cancel action"]
     
-    try:
-        confirm = input(prompt_msg).strip()
-        confirmed = confirm.lower() in ("yes", "y", "confirm")
-        logger.info(f"User confirmation for {tool_name} (target: {target}): {confirmed}")
-        return confirmed
-    except (KeyboardInterrupt, EOFError):
-        print("\nOperation cancelled (input interrupted).")
-        logger.warning("User confirmation prompt interrupted.")
-        return False
+    choice = prompt_user_sync(title, options)
+    confirmed = choice.lower() in ("yes", "y", "confirm", "1", "yes, confirm action")
+    logger.info(f"User confirmation for {tool_name} (target: {target}): {confirmed}")
+    return confirmed

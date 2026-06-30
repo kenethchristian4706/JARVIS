@@ -7,6 +7,7 @@ create_folder, delete_folder, compress_files, extract_archive, list_directory, f
 """
 
 import os
+import time
 import shutil
 import logging
 import zipfile
@@ -191,30 +192,35 @@ def resolve_filename(name_or_path: str, is_directory: Optional[bool] = None) -> 
         return Path(rows[0]["absolute_path"])
         
     # Ambiguity Resolution: ask user to choose
-    print(f"\nFound multiple matching entries for '{name_or_path}':")
-    for idx, row in enumerate(rows, 1):
-        loc = row["relative_location"]
+    from aether.api.prompt import prompt_user_sync
+    title = f"Multiple entries found for '{name_or_path}'. Which one would you like to use?"
+    options = []
+    for r in rows:
+        loc = r["relative_location"]
         suffix = f" ({loc})" if loc else ""
-        print(f"  {idx}. {row['absolute_path']}{suffix}")
+        options.append(f"{r['absolute_path']}{suffix}")
+    options.append("Cancel")
+    
+    choice = prompt_user_sync(title, options)
+    
+    if not choice or choice.lower() in ('cancel', 'cancle', 'c', 'q', 'quit', 'exit', 'abort'):
+        raise ValueError("Ambiguity Resolution Cancelled.")
         
-    while True:
-        try:
-            choice = input(f"Please select a number (1-{len(rows)}) or type 'cancel': ").strip()
-            if choice.lower() in ('cancel', 'cancle', 'c', 'q', 'quit', 'exit', 'abort'):
-                raise ValueError("Operation cancelled by user.")
-            choice_idx = int(choice) - 1
-            if 0 <= choice_idx < len(rows):
-                return Path(rows[choice_idx]["absolute_path"])
-            else:
-                print(f"Invalid selection: {choice}. Please choose a number between 1 and {len(rows)} or type 'cancel'.")
-        except (KeyboardInterrupt, EOFError):
-            logger.warning("Ambiguity resolution interrupted by user.")
-            raise ValueError("Ambiguity Resolution Interrupted.")
-        except ValueError as e:
-            if "Operation cancelled" in str(e):
-                logger.info("Ambiguity resolution cancelled by user.")
-                raise ValueError("Ambiguity Resolution Cancelled.")
-            print(f"Invalid input: '{choice}'. Please select a valid number or type 'cancel'.")
+    try:
+        # Check if selection is an index number (e.g. console input "1")
+        choice_idx = int(choice) - 1
+    except ValueError:
+        # Check if selection matches one of the option strings (e.g. frontend click)
+        choice_idx = -1
+        for idx_opt, opt in enumerate(options[:-1]):  # Exclude "Cancel" option
+            if choice.lower() in opt.lower():
+                choice_idx = idx_opt
+                break
+                
+    if 0 <= choice_idx < len(rows):
+        return Path(rows[choice_idx]["absolute_path"])
+    else:
+        raise ValueError("Invalid selection or operation cancelled.")
 
 def move_file(source: str, destination: Optional[str] = None) -> str:
     """Moves a file or folder from source path to destination folder or path."""
@@ -360,31 +366,67 @@ def create_folder(folder_name: str, location: Optional[str] = None) -> str:
         conn.close()
         
         if rows:
-            print(f"\nA folder or file named '{folder_name}' already exists:")
-            for idx, r in enumerate(rows, 1):
-                loc = r["relative_location"]
-                suffix = f" ({loc})" if loc else ""
-                print(f"  {idx}. {r['absolute_path']}{suffix}")
-            print("\nWhat would you like to do?")
-            print("  1. Open Existing")
-            print("  2. Create Another")
-            print("  3. Cancel")
+            from aether.api.prompt import prompt_user_sync
+            title = f"A folder or file named '{folder_name}' already exists. What would you like to do?"
+            options = ["Choose Existing", "Open Existing", "Create Another", "Cancel"]
+            choice = prompt_user_sync(title, options)
             
-            while True:
-                choice = input("Enter selection (1-3): ").strip()
-                if choice == '1':
-                    # Open existing
-                    if len(rows) == 1:
-                        dest = Path(rows[0]["absolute_path"])
-                    else:
-                        dest = resolve_filename(folder_name, is_directory=True)
+            try:
+                choice_int = int(choice)
+            except ValueError:
+                choice_int = -1
+                for idx_opt, opt in enumerate(options, 1):
+                    if choice.lower() in opt.lower():
+                        choice_int = idx_opt
+                        break
+            
+            if choice_int == 1 or (isinstance(choice, str) and "choose" in choice.lower()):
+                options_sub = []
+                for r in rows:
+                    loc = r["relative_location"]
+                    suffix = f" ({loc})" if loc else ""
+                    options_sub.append(f"{r['absolute_path']}{suffix}")
+                choice_sub = prompt_user_sync("Select which existing folder to use:", options_sub)
+                try:
+                    choice_idx = int(choice_sub) - 1
+                except ValueError:
+                    choice_idx = -1
+                    for idx_opt, opt in enumerate(options_sub, 1):
+                        if choice_sub.lower() in opt.lower():
+                            choice_idx = idx_opt - 1
+                            break
+                if 0 <= choice_idx < len(rows):
+                    dest = Path(rows[choice_idx]["absolute_path"])
+                    return f"Successfully selected existing folder at '{dest}' for further tasks."
+                else:
+                    raise ValueError("Operation cancelled by user.")
+                    
+            elif choice_int == 2 or (isinstance(choice, str) and "open" in choice.lower()):
+                options_sub = []
+                for r in rows:
+                    loc = r["relative_location"]
+                    suffix = f" ({loc})" if loc else ""
+                    options_sub.append(f"{r['absolute_path']}{suffix}")
+                choice_sub = prompt_user_sync("Select which existing folder to open:", options_sub)
+                try:
+                    choice_idx = int(choice_sub) - 1
+                except ValueError:
+                    choice_idx = -1
+                    for idx_opt, opt in enumerate(options_sub, 1):
+                        if choice_sub.lower() in opt.lower():
+                            choice_idx = idx_opt - 1
+                            break
+                if 0 <= choice_idx < len(rows):
+                    dest = Path(rows[choice_idx]["absolute_path"])
                     os.startfile(str(dest))
                     return f"Successfully opened existing folder at '{dest}' (Deferred creation)."
-                elif choice == '2':
-                    break
-                elif choice == '3':
+                else:
                     raise ValueError("Operation cancelled by user.")
-                print("Invalid selection. Please enter 1, 2, or 3.")
+                    
+            elif choice_int == 3 or (isinstance(choice, str) and "create another" in choice.lower()):
+                pass
+            else:
+                raise ValueError("Operation cancelled by user.")
 
     if target.exists():
         if target.is_dir():
@@ -421,31 +463,67 @@ def create_file(filename: str, location: Optional[str] = None) -> str:
         conn.close()
         
         if rows:
-            print(f"\nA file or folder named '{filename}' already exists:")
-            for idx, r in enumerate(rows, 1):
-                loc = r["relative_location"]
-                suffix = f" ({loc})" if loc else ""
-                print(f"  {idx}. {r['absolute_path']}{suffix}")
-            print("\nWhat would you like to do?")
-            print("  1. Open Existing")
-            print("  2. Create Another")
-            print("  3. Cancel")
+            from aether.api.prompt import prompt_user_sync
+            title = f"A file or folder named '{filename}' already exists. What would you like to do?"
+            options = ["Choose Existing", "Open Existing", "Create Another", "Cancel"]
+            choice = prompt_user_sync(title, options)
             
-            while True:
-                choice = input("Enter selection (1-3): ").strip()
-                if choice == '1':
-                    # Open existing
-                    if len(rows) == 1:
-                        dest = Path(rows[0]["absolute_path"])
-                    else:
-                        dest = resolve_filename(filename, is_directory=False)
+            try:
+                choice_int = int(choice)
+            except ValueError:
+                choice_int = -1
+                for idx_opt, opt in enumerate(options, 1):
+                    if choice.lower() in opt.lower():
+                        choice_int = idx_opt
+                        break
+            
+            if choice_int == 1 or (isinstance(choice, str) and "choose" in choice.lower()):
+                options_sub = []
+                for r in rows:
+                    loc = r["relative_location"]
+                    suffix = f" ({loc})" if loc else ""
+                    options_sub.append(f"{r['absolute_path']}{suffix}")
+                choice_sub = prompt_user_sync("Select which existing file to use:", options_sub)
+                try:
+                    choice_idx = int(choice_sub) - 1
+                except ValueError:
+                    choice_idx = -1
+                    for idx_opt, opt in enumerate(options_sub, 1):
+                        if choice_sub.lower() in opt.lower():
+                            choice_idx = idx_opt - 1
+                            break
+                if 0 <= choice_idx < len(rows):
+                    dest = Path(rows[choice_idx]["absolute_path"])
+                    return f"Successfully selected existing file at '{dest}' for further tasks."
+                else:
+                    raise ValueError("Operation cancelled by user.")
+                    
+            elif choice_int == 2 or (isinstance(choice, str) and "open" in choice.lower()):
+                options_sub = []
+                for r in rows:
+                    loc = r["relative_location"]
+                    suffix = f" ({loc})" if loc else ""
+                    options_sub.append(f"{r['absolute_path']}{suffix}")
+                choice_sub = prompt_user_sync("Select which existing file to open:", options_sub)
+                try:
+                    choice_idx = int(choice_sub) - 1
+                except ValueError:
+                    choice_idx = -1
+                    for idx_opt, opt in enumerate(options_sub, 1):
+                        if choice_sub.lower() in opt.lower():
+                            choice_idx = idx_opt - 1
+                            break
+                if 0 <= choice_idx < len(rows):
+                    dest = Path(rows[choice_idx]["absolute_path"])
                     os.startfile(str(dest))
                     return f"Successfully opened existing file at '{dest}' (Deferred creation)."
-                elif choice == '2':
-                    break
-                elif choice == '3':
+                else:
                     raise ValueError("Operation cancelled by user.")
-                print("Invalid selection. Please enter 1, 2, or 3.")
+                    
+            elif choice_int == 3 or (isinstance(choice, str) and "create another" in choice.lower()):
+                pass
+            else:
+                raise ValueError("Operation cancelled by user.")
 
     if target.exists():
         if target.is_file():
@@ -750,4 +828,181 @@ def read_file_content(file_path: str) -> dict:
             "success": False,
             "message": f"Failed to read file: {str(e)}"
         }
+
+
+def write_file(path: str, content: str, encoding: str = "utf-8", create_parent: bool = False) -> dict:
+    """
+    Create a new text file or completely overwrite an existing text file.
+    Does not append text. Supports only text extensions.
+    """
+    start_time = time.time()
+    logger.info(f"Starting write_file for path='{path}', encoding='{encoding}', create_parent={create_parent}")
+    
+    # 1. Supported Text Extensions Validation
+    supported_extensions = {
+        ".txt", ".md", ".csv", ".json", ".xml", ".yaml", ".yml", ".ini", ".log",
+        ".py", ".js", ".ts", ".html", ".css", ".java", ".c", ".cpp", ".h", ".sql",
+        ".sh", ".bat", ".ps1"
+    }
+    
+    try:
+        resolved_path = resolve_path(path)
+        suffix = resolved_path.suffix.lower()
+        
+        if suffix not in supported_extensions:
+            logger.error(f"write_file failed: Unsupported file extension '{suffix}'.")
+            return {
+                "success": False,
+                "message": f"Unsupported extension '{suffix}'. Only text files are supported."
+            }
+            
+        # 2. Check Parent Folder Existence
+        parent = resolved_path.parent
+        if not parent.exists():
+            if create_parent:
+                parent.mkdir(parents=True, exist_ok=True)
+            else:
+                logger.error(f"write_file failed: Parent directory '{parent}' does not exist.")
+                return {
+                    "success": False,
+                    "message": f"Parent directory '{parent}' does not exist and create_parent is set to False."
+                }
+                
+        # 3. Check Overwritten status
+        overwritten = resolved_path.exists()
+        
+        # 4. Perform Write
+        # Check encoding by trying to encode the content first
+        encoded_content = content.encode(encoding)
+        bytes_written = len(encoded_content)
+        
+        with open(resolved_path, "w", encoding=encoding) as f:
+            f.write(content)
+            
+        add_to_index(resolved_path)
+        
+        duration = time.time() - start_time
+        logger.info(f"write_file completed in {duration:.4f}s. Bytes written: {bytes_written}, overwritten: {overwritten}")
+        
+        return {
+            "success": True,
+            "message": f"File successfully written to '{resolved_path}'",
+            "data": {
+                "path": str(resolved_path),
+                "bytes_written": bytes_written,
+                "encoding": encoding,
+                "overwritten": overwritten,
+                "success": True
+            }
+        }
+        
+    except LookupError:
+        logger.error(f"write_file failed: Invalid or unsupported encoding: '{encoding}'")
+        return {
+            "success": False,
+            "message": f"Invalid or unsupported encoding: '{encoding}'."
+        }
+    except PermissionError:
+        logger.error(f"write_file failed: Permission denied accessing '{path}'")
+        return {
+            "success": False,
+            "message": f"Permission denied: you don't have access to write to '{path}'."
+        }
+    except Exception as e:
+        logger.error(f"write_file failed with exception: {e}", exc_info=True)
+        return {
+            "success": False,
+            "message": f"Failed to write file '{path}': {str(e)}"
+        }
+
+
+def duplicate_file(source: str, destination: Optional[str] = None, overwrite: bool = False) -> dict:
+    """
+    Create a duplicate copy of an existing file.
+    Preserves metadata using shutil.copy2().
+    """
+    start_time = time.time()
+    logger.info(f"Starting duplicate_file: source='{source}', destination='{destination}', overwrite={overwrite}")
+    
+    try:
+        # 1. Resolve source
+        src = resolve_filename(source, is_directory=False)
+        if not src.exists():
+            logger.error(f"duplicate_file failed: Source '{source}' not found.")
+            return {
+                "success": False,
+                "message": f"Source file '{source}' not found."
+            }
+        if not src.is_file():
+            logger.error(f"duplicate_file failed: Source '{source}' is not a file.")
+            return {
+                "success": False,
+                "message": f"Source path '{source}' is not a file."
+            }
+            
+        # 2. Determine destination
+        if not destination:
+            # Auto-generate copy filename
+            parent = src.parent
+            stem = src.stem
+            suffix = src.suffix
+            
+            candidate_name = f"{stem} - Copy{suffix}"
+            dst = parent / candidate_name
+            counter = 2
+            while dst.exists():
+                candidate_name = f"{stem} - Copy ({counter}){suffix}"
+                dst = parent / candidate_name
+                counter += 1
+            generated_filename = dst.name
+        else:
+            dst = resolve_path(destination)
+            if dst.is_dir():
+                dst = dst / src.name
+            generated_filename = None
+            
+        # 3. Overwrite check
+        if dst.exists():
+            if not overwrite:
+                logger.error(f"duplicate_file failed: Destination '{dst}' already exists and overwrite is False.")
+                return {
+                    "success": False,
+                    "message": f"Destination file '{dst}' already exists and overwrite is set to False."
+                }
+                
+        # Ensure destination parent folder exists
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        
+        # 4. Perform duplicate
+        shutil.copy2(str(src), str(dst))
+        add_to_index(dst)
+        
+        size = dst.stat().st_size
+        duration = time.time() - start_time
+        logger.info(f"duplicate_file completed in {duration:.4f}s. Source: '{src}', Destination: '{dst}'")
+        
+        return {
+            "success": True,
+            "message": f"Successfully duplicated '{src.name}' to '{dst}'",
+            "data": {
+                "source": str(src),
+                "destination": str(dst),
+                "size": size,
+                "success": True
+            }
+        }
+        
+    except PermissionError:
+        logger.error(f"duplicate_file failed: Permission denied.")
+        return {
+            "success": False,
+            "message": "Permission denied accessing source or destination path."
+        }
+    except Exception as e:
+        logger.error(f"duplicate_file failed with exception: {e}", exc_info=True)
+        return {
+            "success": False,
+            "message": f"Failed to duplicate file: {str(e)}"
+        }
+
 

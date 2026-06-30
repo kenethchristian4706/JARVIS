@@ -72,7 +72,51 @@ def open_app(app_name: str) -> str:
             os.startfile(app_name)
             return f"Successfully launched '{app_name}' via Windows OS shell."
         except Exception as e:
-            raise FileNotFoundError(f"Could not open application '{app_name}' or resolved '{resolved_name}'. Reason: {e}")
+            # Fallback to opening the app's website if not found locally
+            try:
+                web_mappings = {
+                    "spotify": "https://www.spotify.com",
+                    "chrome": "https://www.google.com/chrome",
+                    "firefox": "https://www.mozilla.org/firefox",
+                    "edge": "https://www.microsoft.com/edge",
+                    "vscode": "https://code.visualstudio.com",
+                    "vs code": "https://code.visualstudio.com",
+                    "visual studio code": "https://code.visualstudio.com",
+                    "discord": "https://discord.com",
+                    "slack": "https://slack.com",
+                    "notion": "https://www.figma.com" if "figma" in clean_name else "https://www.notion.so",
+                    "zoom": "https://zoom.us",
+                    "whatsapp": "https://www.whatsapp.com",
+                    "telegram": "https://telegram.org",
+                    "skype": "https://www.skype.com",
+                    "steam": "https://store.steampowered.com",
+                    "excel": "https://www.office.com",
+                    "word": "https://www.office.com",
+                    "powerpoint": "https://www.office.com",
+                    "teams": "https://www.microsoft.com/microsoft-teams",
+                    "obs": "https://obsproject.com",
+                    "vlc": "https://www.videolan.org/vlc",
+                    "github": "https://github.com",
+                    "figma": "https://www.figma.com",
+                    "canva": "https://www.canva.com",
+                }
+                
+                target_url = None
+                for k, url in web_mappings.items():
+                    if k in clean_name or clean_name in k:
+                        target_url = url
+                        break
+                
+                if not target_url:
+                    import urllib.parse
+                    query = urllib.parse.quote(f"{app_name} website")
+                    target_url = f"https://www.google.com/search?q={query}"
+                
+                import webbrowser
+                webbrowser.open(target_url)
+                return f"Application '{app_name}' was not found on your system. Opened its website instead: {target_url}"
+            except Exception as web_err:
+                raise FileNotFoundError(f"Could not open application '{app_name}' or resolved '{resolved_name}' and failed to open fallback website. Reason: {e}, Web error: {web_err}")
 
 def close_app(app_name: str) -> str:
     """Closes all active process instances of a given application by name, using alias matching."""

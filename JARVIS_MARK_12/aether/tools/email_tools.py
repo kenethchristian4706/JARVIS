@@ -1,161 +1,197 @@
-"""
-tools/email_tools.py
-
-Implements the send_email tool for the Aether assistant.
-Allows sending emails using SMTP configurations defined in environment variables.
-Supports a confirmation workflow before actually sending.
-"""
-
-import os
-import smtplib
-import ssl
 import logging
-import socket
-from email.message import EmailMessage
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional
 
-try:
-    from dotenv import load_dotenv
-except ImportError:
-    # Fallback load_dotenv to handle environments where python-dotenv installation is unavailable.
-    def load_dotenv(dotenv_path=None) -> None:
-        """
-        Fallback implementation of load_dotenv that parses a standard .env file
-        and loads key-value pairs into os.environ.
-        """
-        from pathlib import Path
-        if dotenv_path is None:
-            # Look for .env in current directory and parent directories
-            dotenv_path = Path(os.getcwd()) / ".env"
-            if not dotenv_path.exists():
-                dotenv_path = Path(__file__).resolve().parent.parent / ".env"
-        else:
-            dotenv_path = Path(dotenv_path)
-
-        if dotenv_path.exists() and dotenv_path.is_file():
-            try:
-                with open(dotenv_path, "r", encoding="utf-8") as f:
-                    for line in f:
-                        line = line.strip()
-                        if not line or line.startswith("#"):
-                            continue
-                        if "=" in line:
-                            key, val = line.split("=", 1)
-                            key = key.strip()
-                            val = val.strip().strip("'\"")
-                            os.environ[key] = val
-            except Exception as e:
-                logging.getLogger(__name__).warning(f"Failed to read fallback .env: {e}")
-
-# Load environment variables
-load_dotenv()
+from aether.email.email_manager import email_manager
+from aether.email.exceptions import EmailError
 
 logger = logging.getLogger(__name__)
+
+def check_connection() -> Optional[Dict[str, Any]]:
+    """Verify if an email account is currently connected in EmailManager.
+    
+    If not, returns the standardized Aether response indicating that login/connection
+    is required to be handled in the frontend application Settings.
+    """
+    if not email_manager.is_connected():
+        logger.info("Email tool invoked but account is not connected.")
+        return {
+            "success": False,
+            "error": "EMAIL_NOT_CONNECTED",
+            "requires_login": True,
+            "message": "No email account is connected. Please connect your email account in Settings."
+        }
+    return None
 
 def send_email(
     recipient: str,
     subject: str,
     body: str,
+    cc: Optional[str] = None,
+    bcc: Optional[str] = None,
+    attachments: Optional[List[str]] = None,
     confirmed: bool = False
-) -> dict:
+) -> Dict[str, Any]:
     """
     Send an email using SMTP.
-    
-    To secure credentials, Gmail App Passwords (or equivalent application-specific
-    passwords) should be configured in the .env file instead of normal email passwords.
     
     Args:
         recipient (str): Recipient email address.
         subject (str): Subject line of the email.
         body (str): Body content of the email.
-        confirmed (bool): Confirmation flag. If False, returns the email summary for confirmation.
-        
-    Returns:
-        dict: Standardized JSON-like response dict with 'success', 'message', and optional metadata.
+        cc (str, optional): Carbon copy email address(es).
+        bcc (str, optional): Blind carbon copy email address(es).
+        attachments (list, optional): List of local file paths to attach.
+        confirmed (bool): Confirmation flag from the user.
     """
-    logger.info(f"send_email tool triggered. Recipient: {recipient}, Subject: {subject}, Confirmed: {confirmed}")
-    
-    # 1. Read SMTP configuration from environment variables.
-    email_address = os.getenv("EMAIL_ADDRESS")
-    email_password = os.getenv("EMAIL_PASSWORD")
-    smtp_server = os.getenv("SMTP_SERVER")
-    smtp_port_str = os.getenv("SMTP_PORT")
-    
-    # 2. Validate email credentials/configurations exist.
-    if not email_address or not email_password or not smtp_server or not smtp_port_str:
-        logger.error("Email credentials or server configuration not fully set in environment variables.")
-        return {
-            "success": False,
-            "message": "Invalid email credentials."
-        }
-        
-    try:
-        smtp_port = int(smtp_port_str)
-    except ValueError:
-        logger.error(f"Invalid SMTP_PORT configured: {smtp_port_str}")
-        return {
-            "success": False,
-            "message": "Unable to connect to email server."
-        }
+    conn_check = check_connection()
+    if conn_check:
+        return conn_check
 
-    # 3. Confirmation Requirement
+    # Confirmation requirement
     if not confirmed:
-        logger.info("Email sending requires confirmation. Returning preview data.")
+        logger.info("Email sending requires safety confirmation. Returning preview data.")
         return {
             "success": False,
             "requires_confirmation": True,
             "message": "You're about to send an email.",
             "data": {
                 "recipient": recipient,
+                "cc": cc,
+                "bcc": bcc,
                 "subject": subject,
-                "body": body
+                "body": body,
+                "attachments": attachments
             }
         }
 
-    # 4. Create EmailMessage
-    msg = EmailMessage()
-    msg["From"] = email_address
-    msg["To"] = recipient
-    msg["Subject"] = subject
-    msg.set_content(body)
-
-    # 5. Connect and send email
     try:
-        context = ssl.create_default_context()
-        logger.info(f"Connecting to SMTP server {smtp_server}:{smtp_port} using TLS...")
-        
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.ehlo()
-            server.starttls(context=context)
-            server.ehlo()
-            
-            logger.info("Authenticating with SMTP server...")
-            server.login(email_address, email_password)
-            
-            logger.info("Sending the email...")
-            server.send_message(msg)
-            
-        logger.info(f"Email sent successfully to {recipient}")
+        email_manager.send_email(
+            recipients=recipient,
+            subject=subject,
+            body=body,
+            cc=cc,
+            bcc=bcc,
+            attachments=attachments
+        )
         return {
             "success": True,
-            "message": f"Email sent successfully to {recipient}"
+            "message": f"Email sent successfully to {recipient}."
         }
-        
-    except smtplib.SMTPAuthenticationError as auth_err:
-        logger.error(f"Authentication failure: {auth_err}")
-        return {
-            "success": False,
-            "message": "Invalid email credentials."
-        }
-    except (smtplib.SMTPConnectError, TimeoutError, ConnectionError, socket.gaierror) as conn_err:
-        logger.exception(f"Connection error occurred: {conn_err}")
-        return {
-            "success": False,
-            "message": "Unable to connect to email server."
-        }
-    except Exception as e:
-        logger.exception(f"Unexpected exception occurred while sending email: {e}")
+    except EmailError as e:
         return {
             "success": False,
             "message": f"Failed to send email: {e}"
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Unexpected error while sending email: {e}"
+        }
+
+def list_emails(limit: int = 10, unread_only: bool = False) -> Dict[str, Any]:
+    """
+    List summaries of recent emails from the inbox.
+    
+    Args:
+        limit (int, optional): Maximum number of emails to list. Defaults to 10.
+        unread_only (bool, optional): If True, filters to unread emails only.
+    """
+    conn_check = check_connection()
+    if conn_check:
+        return conn_check
+
+    try:
+        emails = email_manager.list_emails(limit=limit, unread_only=unread_only)
+        email_dicts = []
+        for e in emails:
+            email_dicts.append({
+                "id": e.id,
+                "sender": e.sender,
+                "subject": e.subject,
+                "date": e.date,
+                "unread": e.unread,
+                "has_attachments": e.has_attachments
+            })
+        
+        if not email_dicts:
+            msg = "No unread emails found." if unread_only else "No emails found in inbox."
+        else:
+            filter_text = "unread " if unread_only else ""
+            lines = [f"### Recent {filter_text.capitalize()}Emails ({len(email_dicts)})"]
+            for e in email_dicts:
+                unread_badge = " **[UNREAD]**" if e["unread"] else ""
+                attachment_badge = " 📎" if e["has_attachments"] else ""
+                lines.append(f"- **[ID: {e['id']}]** From: {e['sender']} | Subject: **{e['subject']}** | {e['date']}{unread_badge}{attachment_badge}")
+            msg = "\n".join(lines)
+
+        return {
+            "success": True,
+            "message": msg,
+            "data": {
+                "emails": email_dicts
+            }
+        }
+    except EmailError as e:
+        return {
+            "success": False,
+            "message": f"Failed to list emails: {e}"
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Unexpected error while listing emails: {e}"
+        }
+
+def read_email(email_id: str) -> Dict[str, Any]:
+    """
+    Read the content details of a selected email.
+    
+    Args:
+        email_id (str): Email unique identifier, inbox sequence number, or 'latest'.
+    """
+    conn_check = check_connection()
+    if conn_check:
+        return conn_check
+
+    try:
+        details = email_manager.read_email(email_id)
+        recipients_str = ", ".join(details.recipients) if details.recipients else "None"
+        attachments_str = ", ".join(details.attachments) if details.attachments else "None"
+        body_content = details.body.strip() if details.body else "*(Empty Body)*"
+        
+        lines = [
+            f"### Email Details (ID: {details.id})",
+            f"- **From:** {details.sender}",
+            f"- **To:** {recipients_str}",
+            f"- **Subject:** **{details.subject}**",
+            f"- **Date:** {details.date}",
+            f"- **Attachments:** {attachments_str}",
+            "",
+            "### Body",
+            body_content
+        ]
+        msg = "\n".join(lines)
+
+        return {
+            "success": True,
+            "message": msg,
+            "data": {
+                "id": details.id,
+                "sender": details.sender,
+                "recipients": details.recipients,
+                "subject": details.subject,
+                "date": details.date,
+                "body": details.body,
+                "attachments": details.attachments
+            }
+        }
+    except EmailError as e:
+        return {
+            "success": False,
+            "message": f"Failed to read email {email_id}: {e}"
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Unexpected error while reading email: {e}"
         }

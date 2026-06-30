@@ -44,7 +44,19 @@ class CategoryEngine:
             r"\b(search|find|locate)\b": ["search_files"],
             r"\b(write|type|note|notepad)\b": ["open_notepad_and_write"],
             r"\b(screenshot|capture|snap)\b": ["take_screenshot"],
-            r"\b(copy|clipboard|clip)\b": ["set_clipboard", "get_clipboard", "clear_clipboard"]
+            r"\b(copy|clipboard|clip)\b": ["set_clipboard", "get_clipboard", "clear_clipboard"],
+            r"\b(overwrite|replace|rewrite|clear)\b": ["write_file"],
+            r"\b(duplicate|clone)\b": ["duplicate_file"],
+            r"\b(cpu|processor)\b": ["cpu_usage"],
+            r"\b(ram|memory)\b": ["ram_usage"],
+            r"\b(disk|storage|space)\b": ["disk_usage"],
+            r"\b(battery|power|charge)\b": ["battery_status"],
+            r"\b(network|internet|ip|wifi|ethernet)\b": ["network_status"],
+            r"\b(process|processes|task|tasks)\b": ["list_processes"],
+            r"\b(resolution|monitor|display|screen\s*size)\b": ["get_screen_resolution"],
+            r"\b(send\s+email|send\s+mail|write\s+email|write\s+mail)\b": ["send_email"],
+            r"\b(list\s+emails|check\s+mail|show\s+inbox|inbox|list\s+mail)\b": ["list_emails"],
+            r"\b(read\s+email|view\s+email|open\s+email|read\s+mail|view\s+mail|open\s+mail)\b": ["read_email"]
         }
 
         for regex, tools in alias_rules.items():

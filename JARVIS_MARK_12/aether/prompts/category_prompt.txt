@@ -102,3 +102,34 @@ User query: "dim screen and set volume to 50"
 <|im_start|>user
 Query: "{query}"<|im_end|>
 <|im_start|>assistant
+User query: "create report.txt and write project draft into it"
+{
+  "intent": "file_operation",
+  "complexity": "multi_step",
+  "categories": ["file.create", "file.write"]
+}
+
+User query: "unzip backup.zip to Desktop"
+{
+  "intent": "compression_operation",
+  "complexity": "single_step",
+  "categories": ["compression.unzip"]
+}
+
+User query: "dim screen and set volume to 50"
+{
+  "intent": "system_settings",
+  "complexity": "multi_step",
+  "categories": ["system.brightness.decrease", "system.volume.set"]
+}
+
+User query: "check battery"
+{
+  "intent": "system_info",
+  "complexity": "single_step",
+  "categories": ["system.info.battery"]
+}
+<|im_end|>
+<|im_start|>user
+Query: "{query}"<|im_end|>
+<|im_start|>assistant

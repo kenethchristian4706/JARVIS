@@ -45,6 +45,8 @@ TOOL_MAP = {
     "list_directory": files.list_directory,
     "file_info": files.file_info,
     "append_file": files.append_file,
+    "write_file": files.write_file,
+    "duplicate_file": files.duplicate_file,
     
     # Browser Operations
     "search_web": browser.search_web,
@@ -80,7 +82,18 @@ TOOL_MAP = {
     "decrease_brightness": system.decrease_brightness,
     
     # Email Operations
-    "send_email": email.send_email
+    "send_email": email.send_email,
+    "list_emails": email.list_emails,
+    "read_email": email.read_email,
+    
+    # System Info Tools
+    "cpu_usage": system.cpu_usage,
+    "ram_usage": system.ram_usage,
+    "disk_usage": system.disk_usage,
+    "battery_status": system.battery_status,
+    "network_status": system.network_status,
+    "list_processes": system.list_processes,
+    "get_screen_resolution": system.get_screen_resolution
 }
 
 def execute_tool(tool_name: str, parameters: Dict[str, Any]) -> Tuple[bool, str]:
@@ -120,6 +133,7 @@ def execute_tool(tool_name: str, parameters: Dict[str, Any]) -> Tuple[bool, str]
         elif k == "destination_path":
             mapped_parameters["destination"] = v
         elif k == "file_path":
+            mapped_parameters["file_path"] = v
             mapped_parameters["filename"] = v
         elif k == "clipboard_text":
             mapped_parameters["text"] = v
@@ -133,6 +147,17 @@ def execute_tool(tool_name: str, parameters: Dict[str, Any]) -> Tuple[bool, str]
             mapped_parameters["archive"] = v
         else:
             mapped_parameters[k] = v
+
+    # Tool-specific parameter normalization
+    if tool_name == "read_file_content":
+        # read_file_content only accepts 'file_path'; map 'path' or 'filename' to 'file_path'
+        if "file_path" not in mapped_parameters:
+            if "path" in mapped_parameters:
+                mapped_parameters["file_path"] = mapped_parameters.pop("path")
+            elif "filename" in mapped_parameters:
+                mapped_parameters["file_path"] = mapped_parameters.pop("filename")
+        # Remove extra keys that read_file_content doesn't accept
+        mapped_parameters = {"file_path": mapped_parameters["file_path"]} if "file_path" in mapped_parameters else mapped_parameters
 
     # Execute the handler
     try:
@@ -148,7 +173,7 @@ def execute_tool(tool_name: str, parameters: Dict[str, Any]) -> Tuple[bool, str]
             success = result.get("success", True)
             message = result.get("message", "")
             data = result.get("data")
-            if data:
+            if data and tool_name not in ("list_emails", "read_email"):
                 output_str = f"{message} Data: {data}"
             else:
                 output_str = message
