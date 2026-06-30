@@ -44,8 +44,21 @@ def select_categories(query: str) -> Dict[str, Any]:
                 "type": "array",
                 "items": {
                     "type": "string",
-                    "enum": MICRO_CATEGORIES
+                    "enum": MICRO_CATEGORIES + ["Email"]
                 }
+            },
+            "filters": {
+                "type": "object",
+                "properties": {
+                    "date_type": {
+                        "type": "string",
+                        "enum": ["today", "yesterday", "specific"]
+                    },
+                    "date": {
+                        "type": "string"
+                    }
+                },
+                "required": ["date_type"]
             }
         },
         "required": ["intent", "complexity", "categories"]

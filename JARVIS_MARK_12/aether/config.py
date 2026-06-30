@@ -50,3 +50,8 @@ COMPLETION_TIMEOUT = 120.0
 LOGS_DIR = Path(__file__).parent / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
 LOG_FILE = LOGS_DIR / "aether.log"
+
+# Email Summary limits
+MAX_SUMMARIZED_EMAILS = 10
+SUMMARY_MAX_WORDS = 250
+

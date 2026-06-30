@@ -695,6 +695,78 @@ async def process_query(query: str, events: Optional[EventManager] = None) -> Di
         intent = router_output.get("intent", "unknown")
         complexity = router_output.get("complexity", "single_step")
         
+        # Check if the intent is email_summary to run the direct workflow
+        if intent == "email_summary":
+            if events:
+                await events.emit_thinking("Retrieving and summarizing emails...")
+            
+            exec_start_total = time.perf_counter()
+            from aether.email.email_summary import EmailSummaryService
+            from aether.email.exceptions import EmailNotConnectedError
+            
+            filters = router_output.get("filters", {})
+            try:
+                # Run the service in a threadpool to keep the async event loop responsive
+                summary_output = await asyncio.to_thread(EmailSummaryService.summarize, filters)
+                success = True
+                error_msg = None
+                error_code = None
+            except Exception as e:
+                success = False
+                error_msg = str(e)
+                if isinstance(e, EmailNotConnectedError):
+                    summary_output = "No email account is connected.\nPlease connect your email in Settings."
+                    error_code = "EMAIL_NOT_CONNECTED"
+                elif "No emails were found" in str(e) or isinstance(e, ValueError):
+                    summary_output = "No emails were found for the selected date."
+                    # Return as success since no emails found is a valid query result
+                    success = True
+                    error_msg = None
+                    error_code = None
+                elif "Unable to generate summary" in str(e):
+                    summary_output = "Unable to generate summary."
+                    error_code = None
+                elif "Unable to retrieve emails" in str(e):
+                    summary_output = "Unable to retrieve emails."
+                    error_code = None
+                else:
+                    summary_output = f"Error: {e}"
+                    error_code = None
+                    
+            metrics["execution_time"] = time.perf_counter() - exec_start_total
+            metrics["total_time"] = time.perf_counter() - total_start
+            metrics["execution_status"] = "Executed" if success else "Failed"
+            
+            logger.info(f"=== AETHER EMAIL SUMMARY DIAGNOSTICS ===")
+            logger.info(f"User Query                 : {query}")
+            logger.info(f"Normalized Query           : {normalized_query}")
+            logger.info(f"Router Selected Categories : {categories}")
+            logger.info(f"Router latency             : {metrics['intent_time']:.4f}s")
+            logger.info(f"Execution latency          : {metrics['execution_time']:.4f}s")
+            logger.info(f"==========================================")
+            
+            steps_log["execution_result"] = summary_output
+            if success:
+                if events:
+                    await events.emit_final(summary_output)
+                return {
+                    "success": True,
+                    "error": None,
+                    "steps": steps_log,
+                    "output": summary_output,
+                    "metrics": metrics
+                }
+            else:
+                if events:
+                    await events.emit_error(summary_output, error_code=error_code)
+                return {
+                    "success": False,
+                    "error": error_msg,
+                    "steps": steps_log,
+                    "output": summary_output,
+                    "metrics": metrics
+                }
+        
         # Step 2: Deterministic Python Category Engine
         logger.info(f"Expanded Categories: {categories}")
         candidate_tools = CategoryEngine.get_candidate_tools(normalized_query, categories)

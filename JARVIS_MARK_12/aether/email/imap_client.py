@@ -144,16 +144,36 @@ def get_imap_client(email_addr: str, password: str) -> imaplib.IMAP4_SSL:
     except Exception as e:
         raise EmailConnectionError(f"Failed to connect to IMAP server {host}:{port}: {e}")
 
-def list_imap_emails(mail: imaplib.IMAP4_SSL, limit: int = 10, unread_only: bool = False) -> List[EmailSummary]:
+class EmailList(list):
+    def __init__(self, items: list, total_count: int):
+        super().__init__(items)
+        self.total_count = total_count
+
+def list_imap_emails(
+    mail: imaplib.IMAP4_SSL,
+    limit: int = 10,
+    unread_only: bool = False,
+    date_filter: str = None
+) -> List[EmailSummary]:
     """Retrieve summaries of recent emails (newest first)."""
     mail.select("INBOX", readonly=True)
     
-    search_criterion = "UNSEEN" if unread_only else "ALL"
+    search_criteria = []
+    if unread_only:
+        search_criteria.append("UNSEEN")
+    if date_filter:
+        search_criteria.append(date_filter)
+        
+    if not search_criteria:
+        search_criteria.append("ALL")
+        
+    search_criterion = " ".join(search_criteria)
     status, data = mail.uid('search', None, search_criterion)
     if status != 'OK' or not data or not data[0]:
-        return []
+        return EmailList([], 0)
         
     uids = data[0].split()
+    total_count = len(uids)
     uids.reverse()  # Newest first
     selected_uids = uids[:limit]
     
@@ -196,7 +216,7 @@ def list_imap_emails(mail: imaplib.IMAP4_SSL, limit: int = 10, unread_only: bool
         except Exception as e:
             logger.warning(f"Error fetching header for email UID {uid}: {e}")
             
-    return summaries
+    return EmailList(summaries, total_count)
 
 def read_imap_email(mail: imaplib.IMAP4_SSL, email_id: str) -> EmailDetails:
     """Retrieve details for a specific email by UID, inbox sequence index, or 'latest'."""

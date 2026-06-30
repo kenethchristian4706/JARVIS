@@ -100,7 +100,7 @@ class EmailManager:
             attachments=attachments
         )
 
-    def list_emails(self, limit: int = 10, unread_only: bool = False) -> List[EmailSummary]:
+    def list_emails(self, limit: int = 10, unread_only: bool = False, filters: Optional[Dict[str, Any]] = None) -> List[EmailSummary]:
         """Fetch summaries of recent emails from IMAP."""
         if not self.is_connected():
             raise EmailNotConnectedError("Email account is not connected.")
@@ -108,7 +108,7 @@ class EmailManager:
         try:
             mail = get_imap_client(self._email, self._password)
             with mail:
-                return list_imap_emails(mail, limit, unread_only)
+                return list_imap_emails(mail, limit, unread_only, filters)
         except Exception as e:
             logger.error(f"Error listing emails: {e}")
             raise EmailConnectionError(f"Failed to retrieve emails from server: {e}")

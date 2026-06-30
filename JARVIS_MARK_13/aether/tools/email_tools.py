@@ -74,22 +74,27 @@ def list_emails(limit: int = 10, unread_only: bool = False) -> dict:
         
     try:
         emails = email_manager.list_emails(limit=limit, unread_only=unread_only)
-        emails_list = []
-        for e in emails:
-            emails_list.append({
-                "id": e.id,
-                "sender": e.sender,
-                "subject": e.subject,
-                "date": e.date,
-                "unread": e.unread,
-                "has_attachments": e.has_attachments
-            })
+        if not emails:
+            return {
+                "success": True,
+                "message": "No emails found in the inbox."
+            }
+            
+        # Format a clean markdown string
+        lines = [f"### Inbox Emails ({len(emails)})", ""]
+        for i, e in enumerate(emails, 1):
+            status = "Unread" if e.unread else "Read"
+            attachments = " (Has Attachments)" if e.has_attachments else ""
+            lines.append(f"{i}. **ID**: `{e.id}`")
+            lines.append(f"   - **Sender**: {e.sender}")
+            lines.append(f"   - **Subject**: {e.subject}")
+            lines.append(f"   - **Date**: {e.date}")
+            lines.append(f"   - **Status**: {status}{attachments}")
+            lines.append("")
+            
         return {
             "success": True,
-            "message": f"Successfully retrieved {len(emails_list)} emails.",
-            "data": {
-                "emails": emails_list
-            }
+            "message": "\n".join(lines).strip()
         }
     except Exception as e:
         logger.exception(f"Failed to list emails: {e}")
@@ -116,20 +121,25 @@ def read_email(
         
     try:
         details = email_manager.read_email(email_id=email_id, sender=sender, date=date)
+        
+        # Format a clean markdown string
+        recipients_str = ", ".join(details.recipients)
+        attachments_str = f"\n- **Attachments**: {', '.join(details.attachments)}" if details.attachments else ""
+        
+        markdown_output = (
+            f"### Email Details\n\n"
+            f"- **Subject**: {details.subject}\n"
+            f"- **From**: {details.sender}\n"
+            f"- **To**: {recipients_str}\n"
+            f"- **Date**: {details.date}{attachments_str}\n"
+            f"- **ID**: `{details.id}`\n\n"
+            f"---\n\n"
+            f"{details.body}"
+        )
+        
         return {
             "success": True,
-            "message": f"Successfully retrieved email details for ID: {details.id}",
-            "data": {
-                "email": {
-                    "id": details.id,
-                    "sender": details.sender,
-                    "recipients": details.recipients,
-                    "subject": details.subject,
-                    "date": details.date,
-                    "body": details.body,
-                    "attachments": details.attachments
-                }
-            }
+            "message": markdown_output
         }
     except Exception as e:
         logger.exception(f"Failed to read email {email_id} (sender={sender}, date={date}): {e}")

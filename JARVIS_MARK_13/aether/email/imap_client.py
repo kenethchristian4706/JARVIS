@@ -144,11 +144,43 @@ def get_imap_client(email_addr: str, password: str) -> imaplib.IMAP4_SSL:
     except Exception as e:
         raise EmailConnectionError(f"Failed to connect to IMAP server {host}:{port}: {e}")
 
-def list_imap_emails(mail: imaplib.IMAP4_SSL, limit: int = 10, unread_only: bool = False) -> List[EmailSummary]:
+def list_imap_emails(
+    mail: imaplib.IMAP4_SSL, 
+    limit: int = 10, 
+    unread_only: bool = False,
+    filters: Optional[Dict[str, Any]] = None
+) -> List[EmailSummary]:
     """Retrieve summaries of recent emails (newest first)."""
+    import datetime
     mail.select("INBOX", readonly=True)
     
     search_criterion = "UNSEEN" if unread_only else "ALL"
+    
+    if filters and "date_type" in filters:
+        date_type = filters["date_type"]
+        target_date = None
+        
+        if date_type == "today":
+            target_date = datetime.date.today()
+        elif date_type == "yesterday":
+            target_date = datetime.date.today() - datetime.timedelta(days=1)
+        elif date_type == "specific" and "date" in filters:
+            try:
+                target_date = datetime.datetime.strptime(filters["date"], "%Y-%m-%d").date()
+            except Exception as e:
+                logger.error(f"Error parsing specific date filter '{filters['date']}': {e}")
+                
+        if target_date:
+            # Locale-independent IMAP date formatting (DD-Mon-YYYY)
+            months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+            imap_date_str = f"{target_date.day:02d}-{months[target_date.month - 1]}-{target_date.year}"
+            
+            if unread_only:
+                search_criterion = f"UNSEEN ON {imap_date_str}"
+            else:
+                search_criterion = f"ON {imap_date_str}"
+                
+    logger.info(f"IMAP search criterion: {search_criterion}")
     status, data = mail.uid('search', None, search_criterion)
     if status != 'OK' or not data or not data[0]:
         return []

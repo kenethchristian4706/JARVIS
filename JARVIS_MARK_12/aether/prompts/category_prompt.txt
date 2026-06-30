@@ -129,6 +129,37 @@ User query: "check battery"
   "complexity": "single_step",
   "categories": ["system.info.battery"]
 }
+
+User query: "Summarize today's emails"
+{
+  "intent": "email_summary",
+  "complexity": "single_step",
+  "categories": ["Email"],
+  "filters": {
+    "date_type": "today"
+  }
+}
+
+User query: "What emails did I receive yesterday?"
+{
+  "intent": "email_summary",
+  "complexity": "single_step",
+  "categories": ["Email"],
+  "filters": {
+    "date_type": "yesterday"
+  }
+}
+
+User query: "Summarize emails from July 25, 2026"
+{
+  "intent": "email_summary",
+  "complexity": "single_step",
+  "categories": ["Email"],
+  "filters": {
+    "date_type": "specific",
+    "date": "2026-07-25"
+  }
+}
 <|im_end|>
 <|im_start|>user
 Query: "{query}"<|im_end|>

@@ -699,6 +699,54 @@ async def process_query(query: str, events: Optional[EventManager] = None) -> Di
         intent = router_output.get("intent", "unknown")
         complexity = router_output.get("complexity", "single_step")
         
+        if intent == "email_summary":
+            if events:
+                await events.emit_thinking("Generating email summary...")
+            from aether.email.email_summary import EmailSummaryService
+            summary_start = time.perf_counter()
+            try:
+                summary_result = await asyncio.to_thread(
+                    EmailSummaryService.summarize,
+                    router_output.get("filters", {})
+                )
+                metrics["execution_time"] = time.perf_counter() - summary_start
+                metrics["total_time"] = time.perf_counter() - total_start
+                metrics["execution_status"] = "Executed"
+                if events:
+                    await events.emit_final(summary_result)
+                return {
+                    "success": True,
+                    "error": None,
+                    "steps": steps_log,
+                    "output": summary_result,
+                    "metrics": metrics
+                }
+            except Exception as e:
+                metrics["execution_time"] = time.perf_counter() - summary_start
+                metrics["total_time"] = time.perf_counter() - total_start
+                metrics["execution_status"] = "Failed"
+                
+                from aether.email.exceptions import EmailNotConnectedError, EmailConnectionError
+                err_msg = str(e)
+                if isinstance(e, EmailNotConnectedError):
+                    err_msg = "No email account is connected.\nPlease connect your email in Settings."
+                elif isinstance(e, EmailConnectionError):
+                    err_msg = "Unable to retrieve emails."
+                elif "No emails were found" in str(e):
+                    err_msg = "No emails were found for the selected date."
+                elif "Unable to generate summary" in str(e):
+                    err_msg = "Unable to generate summary."
+                
+                if events:
+                    await events.emit_error(err_msg)
+                return {
+                    "success": False,
+                    "error": err_msg,
+                    "steps": steps_log,
+                    "output": err_msg,
+                    "metrics": metrics
+                }
+
         # Step 2: Deterministic Python Category Engine
         logger.info(f"Expanded Categories: {categories}")
         candidate_tools = CategoryEngine.get_candidate_tools(normalized_query, categories)

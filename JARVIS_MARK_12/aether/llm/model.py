@@ -288,7 +288,9 @@ def generate_completion(
     stop_sequences: Optional[list[str]] = None,
     max_tokens: int = 128,
     port: int = config.ROUTER_PORT,
-    return_full_response: bool = False
+    return_full_response: bool = False,
+    temperature: float = 0.0,
+    top_p: float = 1.0
 ) -> Any:
     """
     Queries the targeted sidecar server completion endpoint.
@@ -315,13 +317,14 @@ def generate_completion(
     
     payload = {
         "prompt": prompt,
-        "temperature": 0.0,
-        "top_p": 1.0,
+        "temperature": temperature,
+        "top_p": top_p,
         "stream": False,
         "n_predict": max_tokens,
         "stop": stop_sequences,
         "special": True
     }
+
     
     if json_schema:
         payload["json_schema"] = json_schema

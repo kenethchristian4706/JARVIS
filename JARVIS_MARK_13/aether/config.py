@@ -44,9 +44,14 @@ PLANNER_BASE_URL = f"http://{HOST}:{PLANNER_PORT}"
 BASE_URL = ROUTER_BASE_URL
 
 # Timeout for completion requests in seconds
-COMPLETION_TIMEOUT = 120.0
+COMPLETION_TIMEOUT = 180.0
 
 # Directory for logs
 LOGS_DIR = Path(__file__).parent / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
 LOG_FILE = LOGS_DIR / "aether.log"
+
+# Email summary configuration
+MAX_SUMMARIZED_EMAILS = 10
+SUMMARY_MAX_WORDS = 250
+

@@ -19,6 +19,8 @@ from PIL import Image
 
 from aether.tools.indexer import add_to_index, remove_from_index, get_db_connection, compute_relative_location
 
+from aether.tools.file_search_service import FileSearchService, handle_file_suggestions
+
 logger = logging.getLogger(__name__)
 
 FALLBACK_SEARCH_TRIGGERED = False
@@ -120,104 +122,9 @@ def resolve_filename(name_or_path: str, is_directory: Optional[bool] = None) -> 
     If not found in index, queries standard folders, and performs full filesystem fallback search.
     If multiple matches are found, prompts the user to select one.
     """
-    p = Path(name_or_path)
-    if p.is_absolute():
-        return p
+    return FileSearchService.resolve(name_or_path, is_directory)
 
-    filename = p.name
-    rel_parent = p.parent
-    
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    query = "SELECT absolute_path, relative_location FROM indexed_files WHERE filename = ?"
-    params = [filename]
-    if is_directory is not None:
-        query += " AND is_directory = ?"
-        params.append(1 if is_directory else 0)
-        
-    cursor.execute(query, params)
-    rows = cursor.fetchall()
-    conn.close()
-    
-    # Filter by parent folder structures if the query specifies them
-    if len(rel_parent.parts) > 0:
-        filtered_rows = []
-        for r in rows:
-            rel_loc = r["relative_location"]
-            if rel_loc and (rel_parent.name in rel_loc or Path(rel_loc).is_relative_to(rel_parent)):
-                filtered_rows.append(r)
-        if filtered_rows:
-            rows = filtered_rows
-            
-    if not rows:
-        # Fallback 1: Check standard folders in case index database is not fully built yet
-        fallback_matches = []
-        for d in get_user_directories():
-            candidate = d / name_or_path
-            if candidate.exists():
-                if is_directory is True and not candidate.is_dir():
-                    continue
-                if is_directory is False and not candidate.is_file():
-                    continue
-                resolved = candidate.resolve()
-                if resolved not in fallback_matches:
-                    fallback_matches.append(resolved)
-                    
-        # Fallback 2: Perform full filesystem search (Requirement 8)
-        if not fallback_matches:
-            global FALLBACK_SEARCH_TRIGGERED
-            FALLBACK_SEARCH_TRIGGERED = True
-            logger.info(f"File '{name_or_path}' not found in index or standard directories. Initiating fallback full disk search...")
-            fallback_matches = find_all_files_on_disk(name_or_path, is_directory)
-            
-        if not fallback_matches:
-            raise FileNotFoundError(f"I couldn't find that file anywhere on this computer.")
-            
-        # Add found matches to index
-        for match in fallback_matches:
-            try:
-                add_to_index(match)
-            except Exception:
-                pass
-                
-        if len(fallback_matches) == 1:
-            return fallback_matches[0]
-            
-        # If multiple fallback matches found, convert to rows representation to prompt the user below
-        rows = [{"absolute_path": str(m), "relative_location": compute_relative_location(m)} for m in fallback_matches]
-
-    if len(rows) == 1:
-        return Path(rows[0]["absolute_path"])
-        
-    # Ambiguity Resolution: ask user to choose
-    options = []
-    for row in rows:
-        loc = row["relative_location"]
-        suffix = f" ({loc})" if loc else ""
-        options.append(f"{row['absolute_path']}{suffix}")
-    
-    title = f"Found multiple matching entries for '{name_or_path}':"
-    from aether.api.prompt import prompt_user_sync
-    
-    while True:
-        choice = prompt_user_sync(title, options).strip()
-        if choice.lower() in ('cancel', 'cancle', 'c', 'q', 'quit', 'exit', 'abort'):
-            raise ValueError("Ambiguity Resolution Cancelled.")
-        
-        if choice.isdigit():
-            choice_idx = int(choice) - 1
-            if 0 <= choice_idx < len(rows):
-                return Path(rows[choice_idx]["absolute_path"])
-            else:
-                print(f"Invalid selection: {choice}. Please choose a number between 1 and {len(rows)} or type 'cancel'.")
-        else:
-            # Try matching by absolute path
-            for row in rows:
-                if choice.lower() == row["absolute_path"].lower():
-                    return Path(row["absolute_path"])
-            print(f"Invalid input: '{choice}'. Please select a valid option or type 'cancel'.")
-
+@handle_file_suggestions
 def move_file(source: str, destination: Optional[str] = None) -> str:
     """Moves a file or folder from source path to destination folder or path."""
     src = resolve_filename(source)
@@ -245,6 +152,7 @@ def move_file(source: str, destination: Optional[str] = None) -> str:
     add_to_index(dst_final)
     return f"Successfully moved '{src.name}' from '{src}' to '{dst_final}'"
 
+@handle_file_suggestions
 def copy_file(source: str, destination: Optional[str] = None) -> str:
     """Copies a file from source path to destination folder or path."""
     src = resolve_filename(source)
@@ -274,6 +182,7 @@ def copy_file(source: str, destination: Optional[str] = None) -> str:
     add_to_index(dst_final)
     return f"Successfully copied '{src.name}' from '{src}' to '{dst_final}'"
 
+@handle_file_suggestions
 def rename_file(source: str, new_name: str) -> str:
     """Renames a file or folder at a given path to a new filename."""
     target = resolve_filename(source)
@@ -295,6 +204,7 @@ def rename_file(source: str, new_name: str) -> str:
     add_to_index(dest)
     return f"Successfully renamed '{target.name}' to '{new_name}' (path: '{dest}')"
 
+@handle_file_suggestions
 def delete_file(filename: str) -> str:
     """Deletes a file (moves it to the Recycle Bin using send2trash)."""
     target = resolve_filename(filename, is_directory=False)
@@ -328,6 +238,7 @@ def search_files(query: str) -> str:
     else:
         return f"No files found matching query '{query}'."
 
+@handle_file_suggestions
 def open_file(filename: str) -> str:
     """Opens a file using its default registered OS application."""
     target = resolve_filename(filename, is_directory=False)
@@ -525,6 +436,7 @@ def create_file(filename: str, location: Optional[str] = None) -> str:
     add_to_index(target)
     return f"Successfully created file at '{target}'"
 
+@handle_file_suggestions
 def delete_folder(folder_name: str) -> str:
     """Deletes a folder recursively (moves it to the Recycle Bin using send2trash)."""
     target = resolve_filename(folder_name, is_directory=True)
@@ -537,6 +449,7 @@ def delete_folder(folder_name: str) -> str:
     remove_from_index(target)
     return f"Successfully deleted folder '{target.name}' and its contents (moved to Recycle Bin)."
 
+@handle_file_suggestions
 def compress_files(sources: List[str], output: str) -> str:
     """Compresses a list of files/folders into a zip archive."""
     out_archive = resolve_path(output)
@@ -599,6 +512,7 @@ def compress_files(sources: List[str], output: str) -> str:
     add_to_index(out_archive)
     return f"Successfully compressed files into '{out_archive}'"
 
+@handle_file_suggestions
 def extract_archive(archive: str, destination: Optional[str] = None) -> str:
     """Extracts a zip archive to the destination directory."""
     arc_path = resolve_filename(archive)
@@ -622,6 +536,7 @@ def extract_archive(archive: str, destination: Optional[str] = None) -> str:
     add_to_index(dst)
     return f"Successfully extracted archive '{arc_path.name}' into '{dst}'"
 
+@handle_file_suggestions
 def list_directory(path: Optional[str] = None) -> str:
     """List the files and directories inside a specified path (falls back to CWD if not specified)."""
     if not path:
@@ -631,11 +546,7 @@ def list_directory(path: Optional[str] = None) -> str:
         if not path or path.lower() in ('cancel', 'cancle', 'c', 'q', 'quit', 'exit', 'abort'):
             path = os.getcwd()
             
-    target = resolve_path(path)
-    if not target.exists():
-        raise FileNotFoundError(f"Directory '{path}' not found (resolved: '{target}').")
-    if not target.is_dir():
-        raise NotADirectoryError(f"Path '{path}' is not a directory.")
+    target = resolve_filename(path, is_directory=True)
         
     items = list(target.iterdir())
     if not items:
@@ -647,6 +558,7 @@ def list_directory(path: Optional[str] = None) -> str:
         lines.append(f"  {prefix} {item.name}")
     return "\n".join(lines)
 
+@handle_file_suggestions
 def file_info(filename: str) -> str:
     """Gets metadata for a specific file matching name query (size, extension, modified date)."""
     target = resolve_filename(filename, is_directory=False)
@@ -673,6 +585,7 @@ def file_info(filename: str) -> str:
         f"  Modified Date : {mtime}"
     )
 
+@handle_file_suggestions
 def append_file(filename: str, content: str) -> str:
     """Appends content to a file. Resolves filename first."""
     target = resolve_filename(filename, is_directory=False)
@@ -697,6 +610,7 @@ for candidate in TESSERACT_CMD_CANDIDATES:
         pytesseract.pytesseract.tesseract_cmd = candidate
         break
 
+@handle_file_suggestions
 def extract_text_from_image(image_path: str) -> dict:
     """
     Extract text from an image using OCR (pytesseract).
@@ -764,6 +678,7 @@ def extract_text_from_image(image_path: str) -> dict:
             "message": f"OCR extraction failed: {str(e)}"
         }
 
+@handle_file_suggestions
 def read_file_content(file_path: str) -> dict:
     """
     Read text content from supported files (.txt, .md, .py, .json, .csv, .log).

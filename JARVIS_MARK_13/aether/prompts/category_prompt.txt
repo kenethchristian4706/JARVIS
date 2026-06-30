@@ -35,6 +35,7 @@ Allowed categories:
 - browser.tab.switch: Switching to an open browser tab.
 - network.download: Downloading a file from a URL.
 - email.send: Sending emails.
+- Email: Email summary workflow.
 - system.power.shutdown: Shutting down the PC.
 - system.power.restart: Restarting the PC.
 - system.power.sleep: Putting PC to sleep.
@@ -97,6 +98,37 @@ User query: "dim screen and set volume to 50"
   "intent": "system_settings",
   "complexity": "multi_step",
   "categories": ["system.brightness.decrease", "system.volume.set"]
+}
+
+User query: "Summarize today's emails"
+{
+  "intent": "email_summary",
+  "complexity": "single_step",
+  "categories": ["Email"],
+  "filters": {
+    "date_type": "today"
+  }
+}
+
+User query: "What emails did I receive yesterday?"
+{
+  "intent": "email_summary",
+  "complexity": "single_step",
+  "categories": ["Email"],
+  "filters": {
+    "date_type": "yesterday"
+  }
+}
+
+User query: "Give me a summary of emails from 2026-07-25"
+{
+  "intent": "email_summary",
+  "complexity": "single_step",
+  "categories": ["Email"],
+  "filters": {
+    "date_type": "specific",
+    "date": "2026-07-25"
+  }
 }
 <|im_end|>
 <|im_start|>user
