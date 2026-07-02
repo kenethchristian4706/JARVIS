@@ -33,43 +33,11 @@ def create_word(
         if not filename.lower().endswith(".docx"):
             filename += ".docx"
             
-        if directory:
-            target_dir = resolve_path(directory)
-            file_path = target_dir / filename
-        else:
-            if "/" in filename or "\\" in filename or filename.startswith("~"):
-                file_path = resolve_path(filename)
-            else:
-                from aether.api.prompt import prompt_user_sync
-                from aether.platforms.common.paths import PlatformPaths
-                
-                title = f"Where would you like to create the document '{filename}'?"
-                options = ["Desktop", "Downloads", "Documents", "Current Working Directory", "Custom Path"]
-                choice = prompt_user_sync(title, options).strip()
-                
-                if choice == "1" or choice.lower() == "desktop":
-                    target_dir = PlatformPaths.get_desktop()
-                elif choice == "2" or choice.lower() == "downloads":
-                    target_dir = PlatformPaths.get_downloads()
-                elif choice == "3" or choice.lower() == "documents":
-                    target_dir = PlatformPaths.get_documents()
-                elif choice == "4" or choice.lower().startswith("current"):
-                    target_dir = Path(os.getcwd())
-                elif choice == "5" or choice.lower().startswith("custom"):
-                    custom_path = prompt_user_sync("Enter custom directory path:", []).strip()
-                    if not custom_path:
-                        raise ValueError("Custom path is required.")
-                    target_dir = resolve_path(custom_path)
-                else:
-                    if choice:
-                        target_dir = resolve_path(choice)
-                    else:
-                        target_dir = Path(os.getcwd())
-                
-                file_path = target_dir / filename
-                
-        # Check duplicate logic identical to filesystem tools
-        if not overwrite:
+        file_path = None
+        prompted_for_location = False
+        
+        # 1. FIRST check if file exists in database (if no directory was specified)
+        if not directory and not overwrite:
             from aether.tools.indexer import get_db_connection
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -114,13 +82,70 @@ def create_word(
                         }
                     }
                 elif choice == '2' or choice.lower().startswith("create"):
-                    new_loc = prompt_user_sync("Enter the location path where you want to create the new file:", []).strip()
-                    if not new_loc or new_loc.lower() in ('cancel', 'cancle', 'c', 'q', 'quit', 'exit', 'abort'):
-                        raise ValueError("Location is required.")
-                    file_path = resolve_path(new_loc) / filename
+                    from aether.api.prompt import prompt_user_sync
+                    from aether.platforms.common.paths import PlatformPaths
+                    
+                    title_loc = f"Where would you like to create the document '{filename}'?"
+                    options_loc = ["Desktop", "Downloads", "Documents", "Current Working Directory", "Custom Path"]
+                    choice_loc = prompt_user_sync(title_loc, options_loc).strip()
+                    
+                    if choice_loc == "1" or choice_loc.lower() == "desktop":
+                        target_dir = PlatformPaths.get_desktop()
+                    elif choice_loc == "2" or choice_loc.lower() == "downloads":
+                        target_dir = PlatformPaths.get_downloads()
+                    elif choice_loc == "3" or choice_loc.lower() == "documents":
+                        target_dir = PlatformPaths.get_documents()
+                    elif choice_loc == "4" or choice_loc.lower().startswith("current"):
+                        target_dir = Path(os.getcwd())
+                    elif choice_loc == "5" or choice_loc.lower().startswith("custom"):
+                        custom_path = prompt_user_sync("Enter custom directory path:", []).strip()
+                        if not custom_path:
+                            raise ValueError("Custom path is required.")
+                        target_dir = resolve_path(custom_path)
+                    else:
+                        target_dir = resolve_path(choice_loc) if choice_loc else Path(os.getcwd())
+                    
+                    file_path = target_dir / filename
+                    prompted_for_location = True
                 else:
                     raise ValueError("Operation cancelled by user.")
 
+        # If not resolved yet (was not in database or directory was supplied initially)
+        if not file_path:
+            if directory:
+                target_dir = resolve_path(directory)
+                file_path = target_dir / filename
+            else:
+                if "/" in filename or "\\" in filename or filename.startswith("~"):
+                    file_path = resolve_path(filename)
+                else:
+                    if not prompted_for_location:
+                        from aether.api.prompt import prompt_user_sync
+                        from aether.platforms.common.paths import PlatformPaths
+                        
+                        title_loc = f"Where would you like to create the document '{filename}'?"
+                        options_loc = ["Desktop", "Downloads", "Documents", "Current Working Directory", "Custom Path"]
+                        choice_loc = prompt_user_sync(title_loc, options_loc).strip()
+                        
+                        if choice_loc == "1" or choice_loc.lower() == "desktop":
+                            target_dir = PlatformPaths.get_desktop()
+                        elif choice_loc == "2" or choice_loc.lower() == "downloads":
+                            target_dir = PlatformPaths.get_downloads()
+                        elif choice_loc == "3" or choice_loc.lower() == "documents":
+                            target_dir = PlatformPaths.get_documents()
+                        elif choice_loc == "4" or choice_loc.lower().startswith("current"):
+                            target_dir = Path(os.getcwd())
+                        elif choice_loc == "5" or choice_loc.lower().startswith("custom"):
+                            custom_path = prompt_user_sync("Enter custom directory path:", []).strip()
+                            if not custom_path:
+                                raise ValueError("Custom path is required.")
+                            target_dir = resolve_path(custom_path)
+                        else:
+                            target_dir = resolve_path(choice_loc) if choice_loc else Path(os.getcwd())
+                    else:
+                        target_dir = Path(os.getcwd())
+                    file_path = target_dir / filename
+                    
         path_str = create_word_doc(file_path, content, overwrite)
         
         # Add created file to index
@@ -224,43 +249,11 @@ def create_excel(
         if not filename.lower().endswith(".xlsx"):
             filename += ".xlsx"
             
-        if directory:
-            target_dir = resolve_path(directory)
-            file_path = target_dir / filename
-        else:
-            if "/" in filename or "\\" in filename or filename.startswith("~"):
-                file_path = resolve_path(filename)
-            else:
-                from aether.api.prompt import prompt_user_sync
-                from aether.platforms.common.paths import PlatformPaths
-                
-                title = f"Where would you like to create the workbook '{filename}'?"
-                options = ["Desktop", "Downloads", "Documents", "Current Working Directory", "Custom Path"]
-                choice = prompt_user_sync(title, options).strip()
-                
-                if choice == "1" or choice.lower() == "desktop":
-                    target_dir = PlatformPaths.get_desktop()
-                elif choice == "2" or choice.lower() == "downloads":
-                    target_dir = PlatformPaths.get_downloads()
-                elif choice == "3" or choice.lower() == "documents":
-                    target_dir = PlatformPaths.get_documents()
-                elif choice == "4" or choice.lower().startswith("current"):
-                    target_dir = Path(os.getcwd())
-                elif choice == "5" or choice.lower().startswith("custom"):
-                    custom_path = prompt_user_sync("Enter custom directory path:", []).strip()
-                    if not custom_path:
-                        raise ValueError("Custom path is required.")
-                    target_dir = resolve_path(custom_path)
-                else:
-                    if choice:
-                        target_dir = resolve_path(choice)
-                    else:
-                        target_dir = Path(os.getcwd())
-                
-                file_path = target_dir / filename
-                
-        # Check duplicate logic identical to filesystem tools
-        if not overwrite:
+        file_path = None
+        prompted_for_location = False
+        
+        # 1. FIRST check if file exists in database (if no directory was specified)
+        if not directory and not overwrite:
             from aether.tools.indexer import get_db_connection
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -305,13 +298,70 @@ def create_excel(
                         }
                     }
                 elif choice == '2' or choice.lower().startswith("create"):
-                    new_loc = prompt_user_sync("Enter the location path where you want to create the new file:", []).strip()
-                    if not new_loc or new_loc.lower() in ('cancel', 'cancle', 'c', 'q', 'quit', 'exit', 'abort'):
-                        raise ValueError("Location is required.")
-                    file_path = resolve_path(new_loc) / filename
+                    from aether.api.prompt import prompt_user_sync
+                    from aether.platforms.common.paths import PlatformPaths
+                    
+                    title_loc = f"Where would you like to create the workbook '{filename}'?"
+                    options_loc = ["Desktop", "Downloads", "Documents", "Current Working Directory", "Custom Path"]
+                    choice_loc = prompt_user_sync(title_loc, options_loc).strip()
+                    
+                    if choice_loc == "1" or choice_loc.lower() == "desktop":
+                        target_dir = PlatformPaths.get_desktop()
+                    elif choice_loc == "2" or choice_loc.lower() == "downloads":
+                        target_dir = PlatformPaths.get_downloads()
+                    elif choice_loc == "3" or choice_loc.lower() == "documents":
+                        target_dir = PlatformPaths.get_documents()
+                    elif choice_loc == "4" or choice_loc.lower().startswith("current"):
+                        target_dir = Path(os.getcwd())
+                    elif choice_loc == "5" or choice_loc.lower().startswith("custom"):
+                        custom_path = prompt_user_sync("Enter custom directory path:", []).strip()
+                        if not custom_path:
+                            raise ValueError("Custom path is required.")
+                        target_dir = resolve_path(custom_path)
+                    else:
+                        target_dir = resolve_path(choice_loc) if choice_loc else Path(os.getcwd())
+                    
+                    file_path = target_dir / filename
+                    prompted_for_location = True
                 else:
                     raise ValueError("Operation cancelled by user.")
 
+        # If not resolved yet (was not in database or directory was supplied initially)
+        if not file_path:
+            if directory:
+                target_dir = resolve_path(directory)
+                file_path = target_dir / filename
+            else:
+                if "/" in filename or "\\" in filename or filename.startswith("~"):
+                    file_path = resolve_path(filename)
+                else:
+                    if not prompted_for_location:
+                        from aether.api.prompt import prompt_user_sync
+                        from aether.platforms.common.paths import PlatformPaths
+                        
+                        title_loc = f"Where would you like to create the workbook '{filename}'?"
+                        options_loc = ["Desktop", "Downloads", "Documents", "Current Working Directory", "Custom Path"]
+                        choice_loc = prompt_user_sync(title_loc, options_loc).strip()
+                        
+                        if choice_loc == "1" or choice_loc.lower() == "desktop":
+                            target_dir = PlatformPaths.get_desktop()
+                        elif choice_loc == "2" or choice_loc.lower() == "downloads":
+                            target_dir = PlatformPaths.get_downloads()
+                        elif choice_loc == "3" or choice_loc.lower() == "documents":
+                            target_dir = PlatformPaths.get_documents()
+                        elif choice_loc == "4" or choice_loc.lower().startswith("current"):
+                            target_dir = Path(os.getcwd())
+                        elif choice_loc == "5" or choice_loc.lower().startswith("custom"):
+                            custom_path = prompt_user_sync("Enter custom directory path:", []).strip()
+                            if not custom_path:
+                                raise ValueError("Custom path is required.")
+                            target_dir = resolve_path(custom_path)
+                        else:
+                            target_dir = resolve_path(choice_loc) if choice_loc else Path(os.getcwd())
+                    else:
+                        target_dir = Path(os.getcwd())
+                    file_path = target_dir / filename
+                    
         path_str = create_excel_workbook(file_path, sheet_name, overwrite)
         
         # Add created file to index
