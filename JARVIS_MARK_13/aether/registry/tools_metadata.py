@@ -350,5 +350,47 @@ TOOLS_METADATA: Dict[str, Dict[str, Any]] = {
         "Keywords": ["copy", "clipboard write", "set clipboard"],
         "Aliases": ["copy to clipboard"],
         "Dependencies": "none"
+    },
+    "create_word": {
+        "Purpose": "Create a new Microsoft Word document (.docx).",
+        "Arguments": "filename (str, required), directory (str, optional), content (str, optional), overwrite (bool, optional)",
+        "Keywords": ["create word", "make docx", "write docx", "new document"],
+        "Aliases": ["create report", "create proposal"],
+        "Dependencies": "none"
+    },
+    "read_word": {
+        "Purpose": "Read plain text from a Microsoft Word document (.docx).",
+        "Arguments": "file_path (str, required)",
+        "Keywords": ["read word", "open word", "docx text", "extract docx"],
+        "Aliases": ["read report", "view word document"],
+        "Dependencies": "none"
+    },
+    "edit_word": {
+        "Purpose": "Modify (append or replace text in) a Microsoft Word document (.docx).",
+        "Arguments": "file_path (str, required), operation (str, required), text (str, optional), old_text (str, optional), new_text (str, optional)",
+        "Keywords": ["edit word", "modify docx", "append word", "replace word text"],
+        "Aliases": ["append to document", "replace text in report"],
+        "Dependencies": "none"
+    },
+    "create_excel": {
+        "Purpose": "Create a new Excel workbook (.xlsx).",
+        "Arguments": "filename (str, required), directory (str, optional), sheet_name (str, optional), overwrite (bool, optional)",
+        "Keywords": ["create excel", "make xlsx", "new spreadsheet", "new workbook"],
+        "Aliases": ["create sheet", "create excel file"],
+        "Dependencies": "none"
+    },
+    "read_excel": {
+        "Purpose": "Read worksheet content from an Excel workbook (.xlsx).",
+        "Arguments": "file_path (str, required), sheet_name (str, optional), cell_range (str, optional)",
+        "Keywords": ["read excel", "open excel", "xlsx values", "view sheet"],
+        "Aliases": ["read worksheet", "read table from excel"],
+        "Dependencies": "none"
+    },
+    "write_excel": {
+        "Purpose": "Write a value to a cell in an Excel workbook (.xlsx).",
+        "Arguments": "file_path (str, required), sheet_name (str, required), cell (str, required), value (any, required)",
+        "Keywords": ["write excel", "update cell", "set excel cell", "write xlsx"],
+        "Aliases": ["update sheet cell", "write value to workbook"],
+        "Dependencies": "none"
     }
 }

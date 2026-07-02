@@ -54,6 +54,12 @@ Allowed categories:
 - clipboard.clear: Clearing clipboard contents.
 - clipboard.read: Getting/reading clipboard content.
 - clipboard.write: Copying text to the clipboard.
+- document.word.create: Creating a Word document.
+- document.word.read: Reading a Word document.
+- document.word.write: Modifying or editing a Word document.
+- document.excel.create: Creating an Excel workbook.
+- document.excel.read: Reading Excel sheet contents.
+- document.excel.write: Writing cell values into Excel.
 
 Output Format:
 Your output must be a single JSON object matching this schema:

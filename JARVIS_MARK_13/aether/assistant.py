@@ -631,6 +631,18 @@ def get_step_description(tool: str, args: dict) -> str:
         return f"Retrieve recent emails (limit={args.get('limit', 10)})"
     elif tool == "read_email":
         return f"Read email with ID '{args.get('email_id', 'latest')}'"
+    elif tool == "create_word":
+        return f"Create Word document '{args.get('filename', '')}'"
+    elif tool == "read_word":
+        return f"Read Word document '{args.get('file_path', '')}'"
+    elif tool == "edit_word":
+        return f"Edit Word document '{args.get('file_path', '')}' ({args.get('operation', '')})"
+    elif tool == "create_excel":
+        return f"Create Excel workbook '{args.get('filename', '')}'"
+    elif tool == "read_excel":
+        return f"Read Excel sheet '{args.get('sheet_name', '')}' in '{args.get('file_path', '')}'"
+    elif tool == "write_excel":
+        return f"Write value to cell {args.get('cell', '')} in '{args.get('file_path', '')}'"
     elif tool == "cpu_usage":
         return "Check CPU usage"
     elif tool == "ram_usage":

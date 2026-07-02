@@ -14,6 +14,7 @@ import aether.tools.file_tools as files
 import aether.tools.browser_tools as browser
 import aether.tools.system_tools as system
 import aether.tools.email_tools as email
+import aether.tools.document_tools as documents
 
 
 # Import existence checkers
@@ -82,7 +83,15 @@ TOOL_MAP = {
     # Email Operations
     "send_email": email.send_email,
     "list_emails": email.list_emails,
-    "read_email": email.read_email
+    "read_email": email.read_email,
+    
+    # Document Operations
+    "create_word": documents.create_word,
+    "read_word": documents.read_word,
+    "edit_word": documents.edit_word,
+    "create_excel": documents.create_excel,
+    "read_excel": documents.read_excel,
+    "write_excel": documents.write_excel
 }
 
 def execute_tool(tool_name: str, parameters: Dict[str, Any]) -> Tuple[bool, str]:

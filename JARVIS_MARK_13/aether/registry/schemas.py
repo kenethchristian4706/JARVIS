@@ -6,7 +6,7 @@ These are used by the LLM parameter extraction stage and the validation layer.
 """
 
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Any
 
 # --- Application Management Schemas ---
 
@@ -186,4 +186,40 @@ class ReadEmailSchema(BaseModel):
     email_id: Optional[str] = Field("latest", description="The ID/UID of the email to read, or 'latest' to read the most recent email.")
     sender: Optional[str] = Field(None, description="Optional sender name or email address to search for and read.")
     date: Optional[str] = Field(None, description="Optional date (e.g. 'yesterday', '2026-06-28') to search for and read.")
+
+
+# --- Document Operations Schemas ---
+
+class CreateWordSchema(BaseModel):
+    filename: str = Field(description="The name of the Word document file to create.")
+    directory: Optional[str] = Field(None, description="Optional directory path where the document should be created.")
+    content: Optional[str] = Field(None, description="Optional text content to populate in the first paragraph.")
+    overwrite: Optional[bool] = Field(False, description="Whether to overwrite if file already exists.")
+
+class ReadWordSchema(BaseModel):
+    file_path: str = Field(description="The name or path of the Word document file to read.")
+
+class EditWordSchema(BaseModel):
+    file_path: str = Field(description="The name or path of the Word document file to edit.")
+    operation: str = Field(description="The editing operation to perform: 'append' or 'replace'.")
+    text: Optional[str] = Field(None, description="Text to append (only used for 'append' operation).")
+    old_text: Optional[str] = Field(None, description="The text to find and replace (only used for 'replace' operation).")
+    new_text: Optional[str] = Field(None, description="The replacement text (only used for 'replace' operation).")
+
+class CreateExcelSchema(BaseModel):
+    filename: str = Field(description="The name of the Excel workbook file to create.")
+    directory: Optional[str] = Field(None, description="Optional directory path where the workbook should be created.")
+    sheet_name: Optional[str] = Field("Sheet1", description="Optional name of the worksheet to create.")
+    overwrite: Optional[bool] = Field(False, description="Whether to overwrite if file already exists.")
+
+class ReadExcelSchema(BaseModel):
+    file_path: str = Field(description="The name or path of the Excel workbook file to read.")
+    sheet_name: Optional[str] = Field(None, description="Optional name of the sheet to read.")
+    cell_range: Optional[str] = Field(None, description="Optional cell range to read (e.g. 'A1:C10').")
+
+class WriteExcelSchema(BaseModel):
+    file_path: str = Field(description="The name or path of the Excel workbook file to write.")
+    sheet_name: str = Field("Sheet1", description="The name of the sheet to update.")
+    cell: str = Field(description="The target cell coordinate (e.g. 'A1').")
+    value: Any = Field(description="The value to write into the cell.")
 

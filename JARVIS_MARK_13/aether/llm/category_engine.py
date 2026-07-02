@@ -44,7 +44,9 @@ class CategoryEngine:
             r"\b(search|find|locate)\b": ["search_files"],
             r"\b(write|type|note|notepad)\b": ["open_notepad_and_write"],
             r"\b(screenshot|capture|snap)\b": ["take_screenshot"],
-            r"\b(copy|clipboard|clip)\b": ["set_clipboard", "get_clipboard", "clear_clipboard"]
+            r"\b(copy|clipboard|clip)\b": ["set_clipboard", "get_clipboard", "clear_clipboard"],
+            r"\b(doc|docx|word|report|letter|proposal)\b": ["create_word", "read_word", "edit_word"],
+            r"\b(xls|xlsx|excel|sheet|spreadsheet|workbook|cell)\b": ["create_excel", "read_excel", "write_excel"]
         }
 
         for regex, tools in alias_rules.items():
@@ -61,7 +63,9 @@ class CategoryEngine:
             "extract_archive": ["list_directory"],
             "compress_files": ["list_directory"],
             "send_email": ["get_clipboard"],
-            "extract_text_from_image": ["read_file_content", "open_file"]
+            "extract_text_from_image": ["read_file_content", "open_file"],
+            "edit_word": ["read_word", "create_word"],
+            "write_excel": ["read_excel", "create_excel"]
         }
 
         # Iteratively expand dependencies to capture transitive ones

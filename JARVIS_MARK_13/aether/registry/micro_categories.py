@@ -56,7 +56,13 @@ MICRO_CATEGORY_TO_TOOLS: Dict[str, List[str]] = {
     "text.notepad.write": ["open_notepad_and_write"],
     "clipboard.clear": ["clear_clipboard"],
     "clipboard.read": ["get_clipboard"],
-    "clipboard.write": ["set_clipboard"]
+    "clipboard.write": ["set_clipboard"],
+    "document.word.create": ["create_word"],
+    "document.word.read": ["read_word"],
+    "document.word.write": ["edit_word"],
+    "document.excel.create": ["create_excel"],
+    "document.excel.read": ["read_excel"],
+    "document.excel.write": ["write_excel"]
 }
 
 MICRO_CATEGORIES: List[str] = list(MICRO_CATEGORY_TO_TOOLS.keys())

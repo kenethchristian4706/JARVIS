@@ -316,11 +316,53 @@ TOOL_METADATA_SIMPLIFIED = {
         "Arguments": "email_id (optional), sender (optional), date (optional)",
         "Example_Query": "read my latest email from John",
         "Example_Args": 'email_id="latest", sender="John"'
+    },
+    "create_word": {
+        "Purpose": "Create a new Microsoft Word document (.docx).",
+        "Arguments": "filename, directory, content, overwrite",
+        "Example_Query": "Create report.docx containing Monthly report",
+        "Example_Args": 'filename="report.docx", content="Monthly report", overwrite=False'
+    },
+    "read_word": {
+        "Purpose": "Read plain text from a Word document.",
+        "Arguments": "file_path",
+        "Example_Query": "Read Meeting Notes.docx",
+        "Example_Args": 'file_path="Meeting Notes.docx"'
+    },
+    "edit_word": {
+        "Purpose": "Modify a Word document by appending or replacing text.",
+        "Arguments": "file_path, operation, text, old_text, new_text",
+        "Example_Query": "Replace 2024 with 2025 in report.docx",
+        "Example_Args": 'file_path="report.docx", operation="replace", old_text="2024", new_text="2025"'
+    },
+    "create_excel": {
+        "Purpose": "Create a new Excel workbook.",
+        "Arguments": "filename, directory, sheet_name, overwrite",
+        "Example_Query": "Create Sales workbook with Sheet1",
+        "Example_Args": 'filename="Sales.xlsx", sheet_name="Sheet1", overwrite=False'
+    },
+    "read_excel": {
+        "Purpose": "Read cells or entire worksheet values from an Excel workbook.",
+        "Arguments": "file_path, sheet_name, cell_range",
+        "Example_Query": "Read A1:C10 in sheet1 of Budget.xlsx",
+        "Example_Args": 'file_path="Budget.xlsx", sheet_name="sheet1", cell_range="A1:C10"'
+    },
+    "write_excel": {
+        "Purpose": "Write a value to a specific cell coordinate in an Excel workbook.",
+        "Arguments": "file_path, sheet_name, cell, value",
+        "Example_Query": "Write 500 into cell B4 of Budget.xlsx",
+        "Example_Args": 'file_path="Budget.xlsx", sheet_name="Sheet1", cell="B4", value=500'
     }
 }
 
 TOOL_ARGUMENTS_MAP = {
     "open_app": ["app_name"],
+    "create_word": ["filename", "directory", "content", "overwrite"],
+    "read_word": ["file_path"],
+    "edit_word": ["file_path", "operation", "text", "old_text", "new_text"],
+    "create_excel": ["filename", "directory", "sheet_name", "overwrite"],
+    "read_excel": ["file_path", "sheet_name", "cell_range"],
+    "write_excel": ["file_path", "sheet_name", "cell", "value"],
     "close_app": ["app_name"],
     "list_installed_apps": [],
     "switch_to_app": ["app_name"],

@@ -303,6 +303,36 @@ TOOLS = {
         "category": "clipboard",
         "description": "Copy specified text to the Windows clipboard.",
         "schema_class": schemas.SetClipboardSchema
+    },
+    "create_word": {
+        "category": "documents",
+        "description": "Create a new Microsoft Word document (.docx).",
+        "schema_class": schemas.CreateWordSchema
+    },
+    "read_word": {
+        "category": "documents",
+        "description": "Read plain text from a Microsoft Word document (.docx).",
+        "schema_class": schemas.ReadWordSchema
+    },
+    "edit_word": {
+        "category": "documents",
+        "description": "Modify (append or replace text in) a Microsoft Word document (.docx).",
+        "schema_class": schemas.EditWordSchema
+    },
+    "create_excel": {
+        "category": "documents",
+        "description": "Create a new Excel workbook (.xlsx).",
+        "schema_class": schemas.CreateExcelSchema
+    },
+    "read_excel": {
+        "category": "documents",
+        "description": "Read worksheet content from an Excel workbook (.xlsx).",
+        "schema_class": schemas.ReadExcelSchema
+    },
+    "write_excel": {
+        "category": "documents",
+        "description": "Write a value to a cell in an Excel workbook (.xlsx).",
+        "schema_class": schemas.WriteExcelSchema
     }
 }
 

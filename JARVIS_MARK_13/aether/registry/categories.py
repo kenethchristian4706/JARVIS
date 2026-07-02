@@ -18,5 +18,6 @@ CATEGORIES = {
     "windows": "Switch focus/window to a specific running application.",
     "text": "Open Notepad and write text content.",
     "power": "Perform power state actions like shutdown, restart, sleep, or lock computer.",
-    "process": "List running system application processes."
+    "process": "List running system application processes.",
+    "documents": "Create, read, and edit Word (.docx) and Excel (.xlsx) documents."
 }
