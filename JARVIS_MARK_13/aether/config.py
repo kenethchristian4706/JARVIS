@@ -15,17 +15,15 @@ ATHER_DIR = Path("C:/Users/lenovo/dev/ather")
 LLAMA_SERVER_PATH = ATHER_DIR / "aether-main/runtime/windows-x64/llama-server.exe"
 
 # Router (3B) and Planner (7B) model configurations
-ROUTER_MODEL_NAME = "qwen2.5-3b-instruct-q4_k_m.gguf"
-PLANNER_MODEL_NAME = "qwen2.5-coder-7b-instruct-q4_k_m.gguf"
+from aether.models.manager import load_models_config, resolve_model_path
+models_cfg = load_models_config()
 
-# Resolve model paths
-ROUTER_MODEL_PATH = Path("C:/Users/lenovo/Downloads") / ROUTER_MODEL_NAME
-if not ROUTER_MODEL_PATH.exists():
-    ROUTER_MODEL_PATH = ATHER_DIR / "aether-main/models" / ROUTER_MODEL_NAME
+ROUTER_MODEL_NAME = models_cfg["router_model"]
+PLANNER_MODEL_NAME = models_cfg["planner_model"]
 
-PLANNER_MODEL_PATH = Path("C:/Users/lenovo/Downloads") / PLANNER_MODEL_NAME
-if not PLANNER_MODEL_PATH.exists():
-    PLANNER_MODEL_PATH = ATHER_DIR / "aether-main/models" / PLANNER_MODEL_NAME
+# Resolve model paths dynamically with fallback checks
+ROUTER_MODEL_PATH = resolve_model_path(ROUTER_MODEL_NAME)
+PLANNER_MODEL_PATH = resolve_model_path(PLANNER_MODEL_NAME)
 
 # Backward compatibility constants
 MODEL_NAME = ROUTER_MODEL_NAME

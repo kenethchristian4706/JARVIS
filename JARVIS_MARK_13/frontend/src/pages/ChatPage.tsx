@@ -3,12 +3,13 @@ import { Sidebar } from '../components/Sidebar';
 import { ChatWindow } from '../components/ChatWindow';
 import { ChatInput } from '../components/ChatInput';
 import { useWebSocket } from '../hooks/useWebSocket';
-import { Sliders, Cpu, Activity, ShieldCheck, Mail, Settings, Volume2, Palette, Info } from 'lucide-react';
+import { Sliders, Cpu, Activity, ShieldCheck, Mail, Settings, Info } from 'lucide-react';
 import { EmailSettings } from '../components/EmailSettings';
+import { ModelsSettings } from '../components/ModelsSettings';
 
 export const ChatPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'chat' | 'settings'>('chat');
-  const [settingsTab, setSettingsTab] = useState<'general' | 'appearance' | 'voice' | 'email' | 'about'>('general');
+  const [settingsTab, setSettingsTab] = useState<'general' | 'models' | 'email' | 'about'>('general');
   const lastQueryRef = useRef<string | null>(null);
 
   const {
@@ -117,23 +118,13 @@ export const ChatPage: React.FC = () => {
               </button>
 
               <button
-                onClick={() => setSettingsTab('appearance')}
+                onClick={() => setSettingsTab('models')}
                 className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
-                  settingsTab === 'appearance' ? 'bg-[#16202a] text-white shadow-sm' : 'text-[#141d26]/70 hover:bg-black/5'
+                  settingsTab === 'models' ? 'bg-[#16202a] text-white shadow-sm' : 'text-[#141d26]/70 hover:bg-black/5'
                 }`}
               >
-                <Palette className="w-4 h-4" />
-                Appearance
-              </button>
-
-              <button
-                onClick={() => setSettingsTab('voice')}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
-                  settingsTab === 'voice' ? 'bg-[#16202a] text-white shadow-sm' : 'text-[#141d26]/70 hover:bg-black/5'
-                }`}
-              >
-                <Volume2 className="w-4 h-4" />
-                Voice
+                <Cpu className="w-4 h-4" />
+                Models
               </button>
 
               <button
@@ -215,66 +206,11 @@ export const ChatPage: React.FC = () => {
                 </>
               )}
 
-              {settingsTab === 'appearance' && (
-                <>
-                  <div className="flex flex-col gap-1 border-b border-black/5 pb-4">
-                    <h2 className="custom-font-heading text-2xl font-extrabold text-[#141d26]">
-                      Appearance Settings
-                    </h2>
-                    <p className="text-xs text-[#141d26]/60">
-                      Customize Aether's look and feel, themes, window transparency, and typography.
-                    </p>
-                  </div>
-                  <div className="bg-white border border-black/5 rounded-xl p-6 shadow-sm flex flex-col gap-4">
-                    <div className="flex justify-between items-center pb-3 border-b border-black/5">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-xs font-bold text-[#141d26]">Theme Selection</span>
-                        <span className="text-[10px] text-[#141d26]/40">Switch theme aesthetics between dark and light modes.</span>
-                      </div>
-                      <div className="flex bg-[#f6f4ed] border border-black/10 rounded-lg p-1 text-xs">
-                        <button className="px-3 py-1 bg-[#16202a] text-white font-semibold rounded-md shadow-sm">Dark</button>
-                        <button className="px-3 py-1 text-[#141d26]/60 font-semibold">Light</button>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center pb-3 border-b border-black/5">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-xs font-bold text-[#141d26]">Glassmorphic Sidebar</span>
-                        <span className="text-[10px] text-[#141d26]/40">Toggle background transparency in sidebar menu panels.</span>
-                      </div>
-                      <input type="checkbox" defaultChecked className="accent-[#ecc870] w-4 h-4 cursor-pointer" />
-                    </div>
-                  </div>
-                </>
+              {settingsTab === 'models' && (
+                <ModelsSettings />
               )}
 
-              {settingsTab === 'voice' && (
-                <>
-                  <div className="flex flex-col gap-1 border-b border-black/5 pb-4">
-                    <h2 className="custom-font-heading text-2xl font-extrabold text-[#141d26]">
-                      Voice Configuration
-                    </h2>
-                    <p className="text-xs text-[#141d26]/60">
-                      Control text-to-speech toggles, speed rates, and select language models.
-                    </p>
-                  </div>
-                  <div className="bg-white border border-black/5 rounded-xl p-6 shadow-sm flex flex-col gap-4">
-                    <div className="flex justify-between items-center pb-3 border-b border-black/5">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-xs font-bold text-[#141d26]">Voice Activation (Wake Word)</span>
-                        <span className="text-[10px] text-[#141d26]/40">Enable hotword listening for hands-free queries.</span>
-                      </div>
-                      <input type="checkbox" className="accent-[#ecc870] w-4 h-4 cursor-pointer" />
-                    </div>
-                    <div className="flex justify-between items-center pb-3 border-b border-black/5">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-xs font-bold text-[#141d26]">Voice Synthesis Speech</span>
-                        <span className="text-[10px] text-[#141d26]/40">AI speaks back task completion confirmations automatically.</span>
-                      </div>
-                      <input type="checkbox" className="accent-[#ecc870] w-4 h-4 cursor-pointer" />
-                    </div>
-                  </div>
-                </>
-              )}
+
 
               {settingsTab === 'email' && (
                 <EmailSettings onConnectSuccess={handleConnectSuccess} />

@@ -1,0 +1,22 @@
+# Venv & packages
+venv/
+node_modules/
+dist/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# SQLite Database
+aether/*.db
+database.db
+
+# Large Model files
+aether/models/gguf/*
+*.gguf
+
+# OS files
+.DS_Store
+Thumbs.db

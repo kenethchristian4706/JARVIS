@@ -14,6 +14,7 @@ import logging
 import asyncio
 from pathlib import Path
 from typing import Dict, Any, Tuple, List, Optional
+from aether.platforms import platform
 
 # New pipeline steps
 from aether.registry.tools import get_tools_by_category, list_tools
@@ -133,7 +134,7 @@ def handle_missing_parameters(tool_name: str, parameters: Dict[str, Any], metric
                                 break
                     if 0 <= choice_idx < len(rows):
                         dest = rows[choice_idx]["absolute_path"]
-                        os.startfile(str(dest))
+                        platform.file.open_file(str(dest))
                         parameters["location"] = f"_ALREADY_OPENED_:{dest}"
                         return parameters, True
                     else:
@@ -242,7 +243,7 @@ def handle_missing_parameters(tool_name: str, parameters: Dict[str, Any], metric
                                 break
                     if 0 <= choice_idx < len(rows):
                         dest = rows[choice_idx]["absolute_path"]
-                        os.startfile(str(dest))
+                        platform.file.open_file(str(dest))
                         parameters["location"] = f"_ALREADY_OPENED_:{dest}"
                         return parameters, True
                     else:

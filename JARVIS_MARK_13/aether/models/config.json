@@ -1,0 +1,4 @@
+{
+    "router_model": "qwen2.5-3b-instruct-q4_k_m.gguf",
+    "planner_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf"
+}

@@ -41,6 +41,10 @@ app.include_router(ws_router)
 from aether.email.connection import router as email_router
 app.include_router(email_router)
 
+# Include GGUF models selection REST routes
+from aether.api.models import router as models_router
+app.include_router(models_router)
+
 def setup_logging():
     """Sets up file and console log handlers."""
     logging.basicConfig(

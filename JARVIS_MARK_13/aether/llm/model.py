@@ -348,3 +348,35 @@ def generate_completion(
     except Exception as e:
         logger.error(f"HTTP completion request failed on port {port}: {e}")
         raise RuntimeError(f"Failed to query LLM sidecar server on port {port}: {e}")
+
+def reload_sidecar(role: str, new_model_name: str) -> bool:
+    """
+    Terminates the existing sidecar of the given role, updates config paths,
+    and starts the new sidecar GGUF.
+    """
+    # 1. Stop active sidecar for the role
+    stop_sidecar(role)
+    
+    # 2. Update config values
+    import aether.config as config
+    from pathlib import Path
+    
+    # Resolve path dynamically with fallback checks
+    from aether.models.manager import resolve_model_path
+    new_model_path = resolve_model_path(new_model_name)
+    
+    if role == "router":
+        config.ROUTER_MODEL_NAME = new_model_name
+        config.ROUTER_MODEL_PATH = new_model_path
+        # backward compatibility
+        config.MODEL_NAME = new_model_name
+        config.MODEL_PATH = new_model_path
+        
+        # 3. Start sidecar again
+        return start_sidecar("router", config.ROUTER_MODEL_PATH, config.ROUTER_PORT)
+    else:
+        config.PLANNER_MODEL_NAME = new_model_name
+        config.PLANNER_MODEL_PATH = new_model_path
+        
+        # 3. Start sidecar again
+        return start_sidecar("planner", config.PLANNER_MODEL_PATH, config.PLANNER_PORT)

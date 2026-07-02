@@ -13,7 +13,6 @@ import time
 from pathlib import Path
 from datetime import datetime
 from typing import List, Optional
-import win32api
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -103,27 +102,12 @@ def init_db():
 
 def get_indexed_paths() -> List[Path]:
     """Resolves and returns the list of active logical drive paths to index."""
+    from aether.platforms import platform
     if os.environ.get("AETHER_TESTING") == "1":
-        user_profile = os.environ.get("USERPROFILE", os.path.expanduser("~"))
-        return [
-            Path(user_profile) / "Desktop",
-            Path(user_profile) / "Downloads",
-            Path(user_profile) / "Documents",
-            Path(user_profile) / "Pictures",
-            Path(user_profile) / "Videos",
-            Path(user_profile) / "Music",
-            Path(os.getcwd())
-        ]
+        return platform.path.get_user_directories()
         
     try:
-        drives = win32api.GetLogicalDriveStrings().split('\000')[:-1]
-        paths = []
-        for d in drives:
-            if d:
-                path = Path(d)
-                if path.exists():
-                    paths.append(path)
-        return paths
+        return platform.file.get_indexed_paths()
     except Exception as e:
         logger.error(f"Error resolving logical drives: {e}")
         # Fallback to user home if drive discovery fails
