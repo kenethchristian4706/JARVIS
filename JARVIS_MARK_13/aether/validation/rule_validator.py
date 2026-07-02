@@ -157,6 +157,30 @@ def validate_plan_steps(steps: List[Dict[str, Any]]) -> Tuple[bool, List[str]]:
                 step["tool"] = "open_app"
                 step["arguments"] = {"app_name": "notepad"}
                 logger.info(f"Auto-repaired step {idx}: downgraded open_notepad_and_write without text to open_app notepad.")
+        elif tool_name == "create_word":
+            if "filename" not in arguments and "file_path" not in arguments:
+                content = arguments.get("content")
+                if content:
+                    content_str = str(content).strip()
+                    if (content_str.lower().endswith((".docx", ".doc")) or 
+                        " " not in content_str or 
+                        len(content_str) < 15):
+                        arguments["filename"] = content_str
+                        if content_str.lower().endswith((".docx", ".doc")):
+                            arguments.pop("content", None)
+                    else:
+                        arguments["filename"] = "document.docx"
+                else:
+                    arguments["filename"] = "document.docx"
+                logger.info(f"Auto-repaired step {idx}: added missing filename parameter for create_word.")
+        elif tool_name == "create_excel":
+            if "filename" not in arguments and "file_path" not in arguments:
+                sheet_name = arguments.get("sheet_name")
+                if sheet_name and (str(sheet_name).lower().endswith(".xlsx") or " " not in str(sheet_name)):
+                    arguments["filename"] = sheet_name
+                else:
+                    arguments["filename"] = "workbook.xlsx"
+                logger.info(f"Auto-repaired step {idx}: added missing filename parameter for create_excel.")
 
     # Auto-repair and propagate missing parameters before validation
     propagate_missing_path_parameters(steps)

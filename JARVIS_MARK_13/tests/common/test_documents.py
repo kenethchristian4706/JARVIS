@@ -136,3 +136,40 @@ def test_category_expansion():
     assert "read_excel" in candidates_excel
     assert "write_excel" in candidates_excel
 
+def test_rule_validator_repairs():
+    """
+    Validates that the rule validator correctly auto-repairs missing 'filename'
+    parameters in 'create_word' and 'create_excel' steps when 'content' or
+    'sheet_name' represents the intended file name.
+    """
+    from aether.validation.rule_validator import validate_plan_steps
+    
+    # 1. Test create_word auto-repair
+    steps_word = [
+        {
+            "tool": "create_word",
+            "arguments": {
+                "content": "Report"
+            }
+        }
+    ]
+    is_valid, errors = validate_plan_steps(steps_word)
+    assert is_valid is True
+    assert len(errors) == 0
+    assert steps_word[0]["arguments"]["filename"] == "Report"
+    
+    # 2. Test create_excel auto-repair
+    steps_excel = [
+        {
+            "tool": "create_excel",
+            "arguments": {
+                "sheet_name": "Sales.xlsx"
+            }
+        }
+    ]
+    is_valid, errors = validate_plan_steps(steps_excel)
+    assert is_valid is True
+    assert len(errors) == 0
+    assert steps_excel[0]["arguments"]["filename"] == "Sales.xlsx"
+
+
